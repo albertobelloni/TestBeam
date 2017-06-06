@@ -296,7 +296,8 @@ void doMaps(const char*
     hist_eff[i]->GetXaxis()->SetTitle("x [mm]");
     hist_eff[i]->GetYaxis()->SetTitle("y [mm]");
 
-    canv[i] = new TCanvas(channels[i].name.c_str(),"",500,500);
+    canv[i] = new TCanvas(channels[i].name.c_str(),"",550,500);
+    canv[i]->SetRightMargin(canv[i]->GetLeftMargin());
     hist_eff[i]->Draw("colz");
     fid_line->DrawLine(fiducialX[i][0],fiducialY[i][0],
                        fiducialX[i][1],fiducialY[i][1]);
@@ -328,7 +329,8 @@ void doMaps(const char*
     labelX.SetNDC();
     labelX.SetTextSize(0.05);
     labelX.SetTextAlign(30);
-    labelX.DrawLatex(0.92,0.875,entry[i].c_str());
+    //labelX.DrawLatex(0.92,0.875,entry[i].c_str());
+    labelX.DrawLatex(0.8,0.875,entry[i].c_str());
 
     canvX[i]->Print(Form("efficiency_x_%s.png",channels[i].name.c_str()));
 
@@ -623,6 +625,10 @@ void doTime(const char*
   double pulse_tdc[29][10];
   chain->SetBranchAddress("pulse_tdc",&pulse_tdc);
 
+  double pulse[29][10],ped[29];
+  chain->SetBranchAddress("pulse",&pulse);
+  chain->SetBranchAddress("ped",&ped);
+
   double intercept_X, slope_X;
   double intercept_Y, slope_Y;
   chain->SetBranchAddress("interceptX",&intercept_X);
@@ -653,6 +659,16 @@ void doTime(const char*
       if(!isFiducial(i,x_hit,y_hit))
         continue;
 
+      // Use TS = 5, 6, 7, 8; remove 4 times the pedestal
+      double energy_ps =
+	pulse[channels[i].chan][5]+
+	pulse[channels[i].chan][6]+
+	pulse[channels[i].chan][7]+
+	pulse[channels[i].chan][8]-
+	4*ped[channels[i].chan];
+      if (energy_ps<=25) // require >25fC hits in both scintillators
+	continue;
+      
       double time = -99;
       // Get best time for current channel
       for (int ts=0;ts<10;++ts)
