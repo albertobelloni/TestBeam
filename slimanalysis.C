@@ -312,8 +312,9 @@ void doMaps(const char*
     label.SetNDC();
     label.SetTextSize(0.05);
     label.SetTextAlign(30);
-    label.DrawLatex(0.92,0.875,entry[i].c_str());
-
+    //label.DrawLatex(0.92,0.875,entry[i].c_str());
+    label.DrawLatex(0.8,0.875,entry[i].c_str());
+    
     canv[i]->Print(Form("efficiency_map_%s.png",channels[i].name.c_str()));
     canv[i]->Print(Form("efficiency_map_%s.C",channels[i].name.c_str()));
 
@@ -329,9 +330,8 @@ void doMaps(const char*
     labelX.SetNDC();
     labelX.SetTextSize(0.05);
     labelX.SetTextAlign(30);
-    //labelX.DrawLatex(0.92,0.875,entry[i].c_str());
-    labelX.DrawLatex(0.8,0.875,entry[i].c_str());
-
+    labelX.DrawLatex(0.92,0.875,entry[i].c_str());
+    
     canvX[i]->Print(Form("efficiency_x_%s.png",channels[i].name.c_str()));
 
     hist_effY[i]->Divide(hist_effY[i],hist_denY[i],1,1,"b");
@@ -574,6 +574,7 @@ void doEnergyTS(const char*
   hist_ts[4]->Draw("axis,same");
 
   canv_ts->Print("ts.png");
+  canv_ts->Print("ts.C");
 
 }
 
