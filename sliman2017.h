@@ -110,6 +110,7 @@ float anti_fiducialY[NUMCHAN][4] = {
   { 50, 50, 90, 90},
   { 50, 50, 90, 90}
 };
+
 // Identify channels we need to use
 struct channel {
   int chan;
@@ -190,7 +191,7 @@ const int CANVAS_SIZE_Y = 500;
 
 // Declaration of functions defined in sliman2017.C file
 void doAlignmentPlots(bool debug = false, const char* dir = slim_dir);
-void doMaps(bool debug = false, const char* dir = slim_dir);
+void doMaps(int flag = 63, bool debug = false, const char* dir = slim_dir);
 void doEnergy(int flag = 15, bool debug = false, const char* dir = slim_dir);
 void doTimeSlice(bool debug = false, const char* dir = slim_dir);
 
