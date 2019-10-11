@@ -50,7 +50,8 @@ void doAlignmentPlots(bool debug, const char* dir) {
       hist[i]->GetXaxis()->SetTitle("#deltay [mm]");
     hist[i]->GetXaxis()->SetTitleOffset(1.2);
     hist[i]->GetYaxis()->SetTitle("Events");
-    hist[i]->GetYaxis()->SetTitleOffset(1.6);
+    hist[i]->GetYaxis()->SetTitleOffset(1.4);
+    hist[i]->GetYaxis()->SetMaxDigits(4);
   }
 
   for (int i = 0; i < NPLANES; ++i)
@@ -78,6 +79,7 @@ void doAlignmentPlots(bool debug, const char* dir) {
     hist[i]->Draw("axis,same");
     canv[i]->Print(Form("Alignment_Plots/align_%d.png",i));
     canv[i]->Print(Form("Alignment_Plots/align_%d.pdf",i));
+    canv[i]->Print(Form("Alignment_Plots/align_%d.C",i));
   }
 }
 
