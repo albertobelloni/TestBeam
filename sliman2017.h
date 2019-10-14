@@ -304,7 +304,7 @@ bool above_or_below(double px, double py, int chan) {
     return del >= slope;
   }
   else {
-    cout << "ERROR" << endl;
+    cout << "ERROR T or B" << endl;
     return false;
   }
 }
@@ -312,26 +312,26 @@ bool above_or_below(double px, double py, int chan) {
 bool left_or_right( double px, double py, int chan) {
   double slope = 0, del = 0;
   // Definately Inside
-  if (px <= min(rot_fiducialX[chan][3], rot_fiducialX[chan][1]) && 
-      px >= max(rot_fiducialX[chan][2], rot_fiducialX[chan][0]))
+  if (px <= min(rot_fiducialX[chan][2], rot_fiducialX[chan][1]) && 
+      px >= max(rot_fiducialX[chan][3], rot_fiducialX[chan][0]))
     return true;
   // Definately Outside
-  else if (px > max(rot_fiducialX[chan][3], rot_fiducialX[chan][1]) ||
-	   px < min(rot_fiducialX[chan][2], rot_fiducialX[chan][0]))
+  else if (px > max(rot_fiducialX[chan][2], rot_fiducialX[chan][1]) ||
+	   px < min(rot_fiducialX[chan][3], rot_fiducialX[chan][0]))
     return false;
   // Maybe Right Portion
-  else if (px >= min(rot_fiducialX[chan][3], rot_fiducialX[chan][1]) &&
-	   px <= max(rot_fiducialX[chan][3], rot_fiducialX[chan][1])){
-    slope = (rot_fiducialY[chan][2] - rot_fiducialY[chan][0]) / 
-      (rot_fiducialX[chan][2] - rot_fiducialX[chan][0]);
+  else if (px >= min(rot_fiducialX[chan][2], rot_fiducialX[chan][1]) &&
+	   px <= max(rot_fiducialX[chan][2], rot_fiducialX[chan][1])){
+    slope = (rot_fiducialY[chan][3] - rot_fiducialY[chan][0]) / 
+      (rot_fiducialX[chan][3] - rot_fiducialX[chan][0]);
     del = (py - rot_fiducialY[chan][0]) / (px - rot_fiducialX[chan][0]);
     return del <= slope;
   }
   // Maybe Left Portion
-  else if (px >= min(rot_fiducialX[chan][0], rot_fiducialX[chan][2]) &&
-           px <= max(rot_fiducialX[chan][0], rot_fiducialX[chan][2])){
-    slope = (rot_fiducialY[chan][2] - rot_fiducialY[chan][0]) / 
-      (rot_fiducialX[chan][2] - rot_fiducialX[chan][0]);
+  else if (px >= min(rot_fiducialX[chan][0], rot_fiducialX[chan][3]) &&
+           px <= max(rot_fiducialX[chan][0], rot_fiducialX[chan][3])){
+    slope = (rot_fiducialY[chan][3] - rot_fiducialY[chan][0]) / 
+      (rot_fiducialX[chan][3] - rot_fiducialX[chan][0]);
     del = (py - rot_fiducialY[chan][0]) / (px - rot_fiducialX[chan][0]);
     return del <= slope;
   }
