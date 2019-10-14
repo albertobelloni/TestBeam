@@ -343,7 +343,7 @@ void doMaps(int flag, bool debug, const char* dir) {
       for (auto ts : TIMESLICES)
         energy_ps += pulse[channels[i].chan][ts];
       energy_ps -= TIMESLICES.size()*ped[channels[i].chan];
-      
+
       // Fill the numerator of the efficiency in the efficiency plots,
       // which will then be divided by the denominator plots, filled below
       if (energy_ps>25) {
@@ -485,15 +485,12 @@ void doMaps(int flag, bool debug, const char* dir) {
       canv[i]->SetRightMargin(canv[i]->GetLeftMargin());
 
       hist_eff[i]->Draw("colz");
-      // Draw Lines
-      fid_line->DrawLine(fiducialX[i][0],fiducialY[i][0],
-			 fiducialX[i][1],fiducialY[i][1]);
-      fid_line->DrawLine(fiducialX[i][0],fiducialY[i][0],
-			 fiducialX[i][2],fiducialY[i][2]);
+      // Draw fiducial lines
+      for (int j=0;j<3;j++)
+	fid_line->DrawLine(fiducialX[i][j],fiducialY[i][j],
+			   fiducialX[i][j+1],fiducialY[i][j+1]);
       fid_line->DrawLine(fiducialX[i][3],fiducialY[i][3],
-			 fiducialX[i][1],fiducialY[i][1]);
-      fid_line->DrawLine(fiducialX[i][3],fiducialY[i][3],
-			 fiducialX[i][2],fiducialY[i][2]);
+       			 fiducialX[i][0],fiducialY[i][0]);
 
       TLatex label;
       label.SetNDC();
@@ -524,25 +521,13 @@ void doMaps(int flag, bool debug, const char* dir) {
       canv_rot[i] -> SetRightMargin(canv_rot[i] -> GetLeftMargin());
 
       hist_eff_rot[i] -> Draw("colz");
-      fid_line_rot -> DrawLine( rot_fiducialX[i][0], rot_fiducialY[i][0],
-				rot_fiducialX[i][1], rot_fiducialY[i][1]);
-      fid_line_rot -> DrawLine( rot_fiducialX[i][0], rot_fiducialY[i][0],
-				rot_fiducialX[i][2], rot_fiducialY[i][2]);
-      fid_line_rot -> DrawLine( rot_fiducialX[i][3], rot_fiducialY[i][3],
-				rot_fiducialX[i][1], rot_fiducialY[i][1]);
-      fid_line_rot -> DrawLine( rot_fiducialX[i][3], rot_fiducialY[i][3],
-				rot_fiducialX[i][2], rot_fiducialY[i][2]);
 
-      /*
-      fid_line_rot->DrawLine( anti_fiducialX[i][0], anti_fiducialY[i][0],
-			      anti_fiducialX[i][1], anti_fiducialY[i][1]);
-      fid_line_rot->DrawLine( anti_fiducialX[i][0], anti_fiducialY[i][0],
-			      anti_fiducialX[i][2], anti_fiducialY[i][2]);
-      fid_line_rot->DrawLine( anti_fiducialX[i][3], anti_fiducialY[i][3],
-			      anti_fiducialX[i][1], anti_fiducialY[i][1]);
-      fid_line_rot->DrawLine( anti_fiducialX[i][3], anti_fiducialY[i][3],
-			      anti_fiducialX[i][2], anti_fiducialY[i][2]);
-      */
+      // Draw fiducial lines
+      for (int j=0;j<3;j++)
+	fid_line_rot->DrawLine(rot_fiducialX[i][j],rot_fiducialY[i][j],
+			       rot_fiducialX[i][j+1],rot_fiducialY[i][j+1]);
+      fid_line_rot->DrawLine(rot_fiducialX[i][3],rot_fiducialY[i][3],
+			     rot_fiducialX[i][0],rot_fiducialY[i][0]);
 
       TLatex label_rot;
       label_rot.SetNDC();
@@ -560,6 +545,37 @@ void doMaps(int flag, bool debug, const char* dir) {
     //********************************************************************************
     if (cmb) {
 
+
+      canv_cmb[i] = (TCanvas*)canv_rot[i]->DrawClone();
+
+      // Let us re-define the plot we want to draw
+      for (int xbin=0;xbin<=hist_eff_cmb[i]->GetNbinsX();xbin++)
+	for (int ybin=0;ybin<=hist_eff_cmb[i]->GetNbinsY();ybin++) {
+	  hist_eff_cmb[i]->SetBinContent(xbin,ybin,1.-hist_eff_rot[i]->GetBinContent(xbin,ybin));
+
+	  float x = ((TAxis*)hist_eff_cmb[i]->GetXaxis())->GetBinCenter(xbin);
+	  float y = ((TAxis*)hist_eff_cmb[i]->GetYaxis())->GetBinCenter(ybin);
+	  
+	  hist_eff_cmb[i]->SetBinError(xbin,ybin,hist_eff_rot[i]->GetBinError(xbin,ybin));
+	}
+      
+      hist_eff_cmb[i] -> Draw("colz");
+
+      // Draw fiducial lines
+      for (int j=0;j<3;j++)
+	fid_line_rot->DrawLine(rot_fiducialX[i][j],rot_fiducialY[i][j],
+			       rot_fiducialX[i][j+1],rot_fiducialY[i][j+1]);
+      fid_line_rot->DrawLine(rot_fiducialX[i][3],rot_fiducialY[i][3],
+			     rot_fiducialX[i][0],rot_fiducialY[i][0]);
+      
+      TLatex label_cmb;
+      label_cmb.SetNDC();
+      label_cmb.SetTextSize(0.05);
+      label_cmb.SetTextAlign(30);
+      label_cmb.DrawLatex(0.8,0.875, entry[i].c_str());
+
+      /*
+
       // Define Color Palette
       const Int_t num = 9;
       // These are parameters for "kBird", the palette that we use originaly
@@ -569,8 +585,9 @@ void doMaps(int flag, bool debug, const char* dir) {
       Double_t length[num] = { 0.00, 0.86, 0.88, 0.90, 0.92, 0.94, 0.96, 0.98, 1.0};
       Int_t nb = 255;
       TColor::CreateGradientColorTable( num, length, red, green, blue, nb);
-      
-      canv_cmb[i] = (TCanvas*)canv_rot[i]->DrawClone();
+
+      */      
+
       canv_cmb[i]->Print(Form("Rotated_Images/Efficiency_Maps_2D/CMB_Plots/efficiency_map_rotcmb%s.png",channels[i].name.c_str()));
       canv_cmb[i]->Print(Form("Rotated_Images/Efficiency_Maps_2D/CMB_Plots/efficiency_map_rotcmb%s.pdf",channels[i].name.c_str()));
       canv_cmb[i]->Print(Form("Rotated_Images/Efficiency_Maps_2D/CMB_Plots/efficiency_map_rotcmb%s.C",channels[i].name.c_str()));

@@ -40,64 +40,61 @@ vector<unsigned int> fingers = {3, 4, 5, 6};
 
 // Fiducial region: for each tile, 4 points are needed (8 numbers)
 // TB: top, bottom; LR: left, right
-// x,y BL; x,y BR; x,y TL; x,y TR
+// x,y BL; x,y BR; x,y TR; x,y TL
 float fiducialX[NUMCHAN][4] = {
 #if REG
-  {-33,  32, -46,  16}, // EJ-260 CHECKED (TR)
-  {-26,  31, -43,  31}, // EJ-260 2P CHECKED (TL)
-  {-30,  35, -37,  30}, // EJ-200 CHECKED 
-  // {-10,10,-10,10},   // Scint-X #signma
-  // {  7,18,-6,  5},   // Scint-X finger
-  {-32, -20, -42, -30}, // SCSN-81 finger 1
-  {-16,  -4, -27, -15}, // SCSN-81 finger 2
-  {  0,  13, -11,   2}, // SCSN-81 finger 3
-  { 17,  30,   5,  18}, // SCSN-81 finger 4
-  {-38,  34, -49,  22}  // SCSN-81 #sigma CHECKED
+  {-33,  32,  16, -46}, // EJ-260 CHECKED (TR)
+  {-26,  31,  31, -43}, // EJ-260 2P CHECKED (TL)
+  {-30,  35,  30, -37}, // EJ-200 CHECKED 
+  {-32, -20, -30, -42}, // SCSN-81 finger 1
+  {-16,  -4, -15, -27}, // SCSN-81 finger 2
+  {  0,  13,   2, -11}, // SCSN-81 finger 3
+  { 17,  30,  18,   5}, // SCSN-81 finger 4
+  {-38,  34,  22, -49}  // SCSN-81 #sigma CHECKED
 #else
-  {-28,  29, -39.5,  18}, // EJ-260 CHECKED 
-  {-29,  26.5, -43,  12.5}, // EJ-260 2P CHECKED
-  {-30,  30, -38,  22}, // EJ-200 CHECKED 
-  {-33.5, -21.5, -41, -29}, // SCSN-81 finger 1 CHECKED
-  {-16, -4, -27, -15}, // SCSN-81 finger 2 CHECKED
-  {0,  12, -11, 2}, // SCSN-81 finger 3 CHECKED
-  { 14,  26.5, 5, 18}, // SCSN-81 finger 4 CHECKED
-  {-29.5, 29.5, -39, 20}  // SCSN-81 #sigma CHECKED
+  {  -28,    29,    18, -39.5}, // EJ-260 CHECKED 
+  {  -29,  26.5,  12.5,   -43}, // EJ-260 2P CHECKED
+  {  -30,    30,    22,   -38}, // EJ-200 CHECKED 
+  {-33.5, -21.5,   -29,   -41}, // SCSN-81 finger 1 CHECKED
+  {  -16,    -4,   -15,   -27}, // SCSN-81 finger 2 CHECKED
+  {    0,    12,     2,   -11}, // SCSN-81 finger 3 CHECKED
+  {   14,  26.5,    18,     5}, // SCSN-81 finger 4 CHECKED
+  {-29.5,  29.5,    20,   -39}  // SCSN-81 #sigma CHECKED
 #endif
 };
 
 float fiducialY[NUMCHAN][4] = {
 #if REG
-  {-52, -43, 15, 29}, // EJ-260 CHECKED (TR)
-  {-54, -39, 27, 42}, // EJ-260 2P CHECKED (TL)
-  {-47, -39, 34, 42}, // EJ-200 CHECKED 
-  // {-10,-10,10,10}, // Scint-X #signma
-  // {-42,-41,20,22}, // Scint-X finger
-  {-50, -48, 23, 25}, // SCSN-81 finger 1
-  {-50, -48, 25, 27}, // SCSN-81 finger 2
-  {-50, -48, 28, 30}, // SCSN-81 finger 3
-  {-46, -44, 30, 32}, // SCSN-81 finger 4
-  {-52, -46, 21, 34}  // SCSN-81 #sigma CHECKED
+  {-52, -43, 29, 15}, // EJ-260 CHECKED (TR)
+  {-54, -39, 42, 27}, // EJ-260 2P CHECKED (TL)
+  {-47, -39, 42, 34}, // EJ-200 CHECKED 
+  {-50, -48, 25, 23}, // SCSN-81 finger 1
+  {-50, -48, 27, 25}, // SCSN-81 finger 2
+  {-50, -48, 30, 28}, // SCSN-81 finger 3
+  {-46, -44, 32, 30}, // SCSN-81 finger 4
+  {-52, -46, 34, 21}  // SCSN-81 #sigma CHECKED
 #else
-  {-29.5, -17, 19, 32}, // EJ-260 CHECKED
-  {-41, -30, 27.5, 39}, // EJ-260 2P CHECKED
-  {-48, -42, 30, 36}, // EJ-200 CHECKED
-  {-39 , -38, 17, 18.5}, // SCSN-81 finger 1 CHECKED
-  {-41, -39, 27, 29}, // SCSN-81 finger 2 CHECKED
-  {-39, -37, 29.5, 31.5}, // SCSN-81 finger 3 CHECKED
-  {-27, -25, 31, 33}, // SCSN-81 finger 4 CHECKED
-  {-35.5, -26, 25, 34}  // SCSN-81 #sigma CHECKED
+  {-29.5, -17,   32,   19}, // EJ-260 CHECKED
+  {  -41, -30,   39, 27.5}, // EJ-260 2P CHECKED
+  {  -48, -42,   36,   30}, // EJ-200 CHECKED
+  {  -39, -38, 18.5,   17}, // SCSN-81 finger 1 CHECKED
+  {  -41, -39,   29,   27}, // SCSN-81 finger 2 CHECKED
+  {  -39, -37, 31.5, 29.5}, // SCSN-81 finger 3 CHECKED
+  {  -27, -25,   33,   31}, // SCSN-81 finger 4 CHECKED
+  {-35.5, -26,   34,   25}  // SCSN-81 #sigma CHECKED
 #endif
 };
 
+// FLIPPED THIS TOO!!! TL and TR
 float anti_fiducialX[NUMCHAN][4] = {
-  { -80, 80, -80, 80},
-  { -80, 80, -80, 80},
-  { -80, 80, -80, 80},
-  { -80, 80, -80, 80},
-  { -80, 80, -80, 80},
-  { -80, 80, -80, 80},
-  { -80, 80, -80, 80},
-  { -80, 80, -80, 80}
+  { -80, 80, 80, -80},
+  { -80, 80, 80, -80},
+  { -80, 80, 80, -80},
+  { -80, 80, 80, -80},
+  { -80, 80, 80, -80},
+  { -80, 80, 80, -80},
+  { -80, 80, 80, -80},
+  { -80, 80, 80, -80}
 };
 
 float anti_fiducialY[NUMCHAN][4] = {
