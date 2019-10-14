@@ -300,6 +300,8 @@ void doMaps(int flag, bool debug, const char* dir) {
 
   // There are 1720742 events (muons)
   for (unsigned int j = 0; j < chain->GetEntries(); ++j) {
+
+    // If debugging, let us look only at 50k events
     if (debug && j > 50000)
       continue;
     
@@ -462,6 +464,11 @@ void doMaps(int flag, bool debug, const char* dir) {
   TCanvas *canv_allfingersY, *canv_allfingersX, *canv_allsigsY, *canv_allsigsX;
   
   for (unsigned int i = 0; i < channels.size(); ++i) {
+
+    // If debugging, let us look only at one sigma and one finger tiles
+    if (debug && i!=0 && i!=3)
+      continue;
+
     //********************************************************************************
     // ******** 2D EFFICIENCY ********
     //********************************************************************************
@@ -545,18 +552,33 @@ void doMaps(int flag, bool debug, const char* dir) {
     //********************************************************************************
     if (cmb) {
 
+      // Define Color Palette
+      const Int_t num = 9;
+      // These are parameters for "kBird", the palette that we use originaly
+      Double_t red[num]   = { 0.2082, 0.0592, 0.0780, 0.0232, 0.1802, 0.5301, 0.8186, 0.9956, 0.9764};
+      Double_t green[num] = { 0.1664, 0.3599, 0.5041, 0.6419, 0.7178, 0.7492, 0.7328, 0.7862, 0.9832};
+      Double_t blue[num]  = { 0.5293, 0.8684, 0.8385, 0.7914, 0.6425, 0.4662, 0.3499, 0.1968, 0.0539};
+      Double_t length[num] = { 0.00, 0.86, 0.88, 0.90, 0.92, 0.94, 0.96, 0.98, 1.0};
+      Int_t nb = 255;
+      TColor::CreateGradientColorTable( num, length, red, green, blue, nb);
 
       canv_cmb[i] = (TCanvas*)canv_rot[i]->DrawClone();
 
       // Let us re-define the plot we want to draw
+      // setting to zero the entries when outside of fiducial volume
+      // This makes the plot easier to massage into a useful format, maybe
       for (int xbin=0;xbin<=hist_eff_cmb[i]->GetNbinsX();xbin++)
 	for (int ybin=0;ybin<=hist_eff_cmb[i]->GetNbinsY();ybin++) {
-	  hist_eff_cmb[i]->SetBinContent(xbin,ybin,1.-hist_eff_rot[i]->GetBinContent(xbin,ybin));
-
 	  float x = ((TAxis*)hist_eff_cmb[i]->GetXaxis())->GetBinCenter(xbin);
-	  float y = ((TAxis*)hist_eff_cmb[i]->GetYaxis())->GetBinCenter(ybin);
-	  
-	  hist_eff_cmb[i]->SetBinError(xbin,ybin,hist_eff_rot[i]->GetBinError(xbin,ybin));
+	  float y = ((TAxis*)hist_eff_cmb[i]->GetYaxis())->GetBinCenter(ybin);	  
+	  if (isRotFiducial(i,x,y)) {
+	    hist_eff_cmb[i]->SetBinContent(xbin,ybin,hist_eff_rot[i]->GetBinContent(xbin,ybin));
+	    hist_eff_cmb[i]->SetBinError  (xbin,ybin,hist_eff_rot[i]->GetBinError  (xbin,ybin));
+	  }
+	  else {
+	    hist_eff_cmb[i]->SetBinContent(xbin,ybin,0);
+	    hist_eff_cmb[i]->SetBinError(xbin,ybin,0);
+	  }
 	}
       
       hist_eff_cmb[i] -> Draw("colz");
@@ -573,20 +595,6 @@ void doMaps(int flag, bool debug, const char* dir) {
       label_cmb.SetTextSize(0.05);
       label_cmb.SetTextAlign(30);
       label_cmb.DrawLatex(0.8,0.875, entry[i].c_str());
-
-      /*
-
-      // Define Color Palette
-      const Int_t num = 9;
-      // These are parameters for "kBird", the palette that we use originaly
-      Double_t red[num]   = { 0.2082, 0.0592, 0.0780, 0.0232, 0.1802, 0.5301, 0.8186, 0.9956, 0.9764};
-      Double_t green[num] = { 0.1664, 0.3599, 0.5041, 0.6419, 0.7178, 0.7492, 0.7328, 0.7862, 0.9832};
-      Double_t blue[num]  = { 0.5293, 0.8684, 0.8385, 0.7914, 0.6425, 0.4662, 0.3499, 0.1968, 0.0539};
-      Double_t length[num] = { 0.00, 0.86, 0.88, 0.90, 0.92, 0.94, 0.96, 0.98, 1.0};
-      Int_t nb = 255;
-      TColor::CreateGradientColorTable( num, length, red, green, blue, nb);
-
-      */      
 
       canv_cmb[i]->Print(Form("Rotated_Images/Efficiency_Maps_2D/CMB_Plots/efficiency_map_rotcmb%s.png",channels[i].name.c_str()));
       canv_cmb[i]->Print(Form("Rotated_Images/Efficiency_Maps_2D/CMB_Plots/efficiency_map_rotcmb%s.pdf",channels[i].name.c_str()));
