@@ -11,14 +11,32 @@ Quick summary:
     git clone https://github.com/yimuchen/SiPMCalib
     scram b -j 12
 
+Typical usage:
+
+root -l 
+root [1] .L fitter2017.C++
+root [2] fitter2017("energy_hists.root","en_bins_EJ_260",2)
+
+ TFile*         energy_hists.root
+  KEY: TH1F     en_bins_EJ_260;1
+  KEY: TH1F     en_bins_EJ_260_2P;1
+  KEY: TH1F     en_bins_EJ_200;1
+  KEY: TH1F     en_bins_SCSN_81F1;1
+  KEY: TH1F     en_bins_SCSN_81F2;1
+  KEY: TH1F     en_bins_SCSN_81F3;1
+  KEY: TH1F     en_bins_SCSN_81F4;1
+  KEY: TH1F     en_bins_SCSN_81S;1
+
  *///////////////////////////////////////////////////////////////////////////////
 
 #include "RooRealVar.h"
 #include "TSystem.h"
 #include "TH1F.h"
+#include "TTree.h"
 #include "TFile.h"
 #include "TMath.h"
 #include "RooDataHist.h"
+#include "RooDataSet.h"
 #include "RooPlot.h"
 
 #include "SiPMCalib/SiPMCalc/interface/SiPMPdf.hpp"
@@ -48,20 +66,32 @@ void fitter2017(const char* filename, const char* histname, const int rebin=1) {
 
   SiPMPdf p( "p", "p", x, ped, gain, s0, s1,
              mean, lambda//,
-             //alpha, beta,
+             //alpha, beta//,
              //dcfrac, eps  
   );
 
+
+  /* // OPEN HISTOGRAM
   TFile *file = TFile::Open(filename);
   TH1F *hist = (TH1F*)file->Get(histname);
   if(!hist) {
     std::cout << "The histogram pointer is null: is the histogram name correct?\n";
     return;
   }
-
   hist->Rebin(rebin);
-
   RooDataHist data("data","data", RooArgSet(x), hist );
+  */
+
+  // OPEN TREE
+  TFile *file = TFile::Open(filename);
+  TTree *tree = (TTree*)file->Get(histname);
+  if(!tree) {
+    std::cout << "The tree pointer is null: is the tree name correct?\n";
+    return;
+  }
+  RooDataSet data("data","data", tree, RooArgSet(x), "x>-50 && x<600" );
+
+
 
   p.RunEstimate( data ) ; // Running fit independent estimates on ped, gain, s0, s1, mean, lambda  
   p.fitTo( data) ;       // Running the fit.
@@ -70,8 +100,8 @@ void fitter2017(const char* filename, const char* histname, const int rebin=1) {
   data.plotOn(frame);
   p.plotOn(frame);
   frame->Draw();
-  std::cout << std::endl 
-	    << "CHI2/NDF:  " << frame->chiSquare(6) << std::endl
-	    << "CHI2 Prob: " << TMath::Prob(frame->chiSquare()*hist->GetNbinsX(),hist->GetNbinsX()-6) << std::endl;
+  // std::cout << std::endl 
+  // 	    << "CHI2/NDF:  " << frame->chiSquare(6) << std::endl
+  // 	    << "CHI2 Prob: " << TMath::Prob(frame->chiSquare()*hist->GetNbinsX(),hist->GetNbinsX()-6) << std::endl;
 
 }

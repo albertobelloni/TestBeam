@@ -1170,6 +1170,7 @@ void doEnergy(int flag, bool debug, const char* dir) {
   TH1F *hist_en[NUMCHAN]; // 8 is the number of tiles; channels.size() == 8
   TH1F *hist_en_bins[NUMCHAN]; // This will be used for pulse shape fits
   TH1F *hist_en_ped[NUMCHAN]; // This uses a region NOT where the tile is
+  TTree *energy_tree[NUMCHAN];
 
   if (channels.size()!= NUMCHAN) {
     cout << "Argh, something wrong!" << endl;
@@ -1177,10 +1178,17 @@ void doEnergy(int flag, bool debug, const char* dir) {
   }
 
   const unsigned int enbins = 325;
+
+  // Some global variable, to use to fill the trees
+  double energy[NUMCHAN];
+
+
   for (unsigned int i = 0; i < channels.size(); ++i) {
     hist_en[i] = new TH1F( Form("en_%s", channels[i].name.c_str()), "", 247, edges);
     hist_en_bins[i] = new TH1F( Form("en_bins_%s", channels[i].name.c_str()), "", enbins, -50.0, 600.0);
     hist_en_ped[i] = new TH1F( Form("en_ped_%s", channels[i].name.c_str()), "", 37, -50,50); // binning here very fine tuned...
+    energy_tree[i] = new TTree( Form("energy_tree_%s", channels[i].name.c_str()),"");
+    energy_tree[i]->Branch("x",&energy[i],"x/D");
   }
 
   // Now we get the data
@@ -1253,6 +1261,8 @@ void doEnergy(int flag, bool debug, const char* dir) {
 
       hist_en[i]->Fill(energy_ps);
       hist_en_bins[i]->Fill(energy_ps);
+      energy[i] = energy_ps;
+      energy_tree[i]->Fill();
 
     } // loop on channels
   } // loop on events
@@ -1335,6 +1345,7 @@ void doEnergy(int flag, bool debug, const char* dir) {
       canv_bins[i]->SetLogy();
       hist_en_bins[i]->Draw("colz");
       hist_en_bins[i]->Write();
+      energy_tree[i]->Write();
       
       TLatex label_bins;
       label_bins.SetNDC();

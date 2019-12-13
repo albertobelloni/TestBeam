@@ -13,6 +13,7 @@
 #include <TChain.h>
 #include <TCanvas.h>
 #include <TFile.h>
+#include <TTree.h>
 #include <TLegend.h>
 #include <TLine.h>
 #include <TLatex.h>
