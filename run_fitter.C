@@ -20,8 +20,6 @@ void run_fitter(const char* tile = "energy_tree_SCSN_81S") {
   TDatime start;
   start.Print();
   gSystem->Load("fitter2017_C.so");
-  //gROOT->ProcessLine(".L fitter2017.C++");
-  //gROOT->ProcessLine("fitter2017\(\"energy_hists.root\",\"energy_tree_SCSN_81S\"\);");
   fitter2017("energy_hists.root",tile);
   TDatime stop;
   stop.Print();
