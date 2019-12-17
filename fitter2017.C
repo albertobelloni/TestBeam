@@ -102,7 +102,6 @@ void fitter2017(const char* filename, const char* histname,
     return;
   }
 
-  
   RooWorkspace *workspace = new RooWorkspace("w","fitter2017_workspace");
 
   if (fittype==BINNED) {
@@ -133,7 +132,7 @@ void fitter2017(const char* filename, const char* histname,
     data.plotOn(frame);
     p->plotOn(frame);
     frame->Draw();
-    
+
     workspace->import(data);
     workspace->import(*p);
 
@@ -142,7 +141,7 @@ void fitter2017(const char* filename, const char* histname,
 	      << "CHI2/NDF:  " << frame->chiSquare(npars) << std::endl
 	      << "CHI2 Prob: " << TMath::Prob(frame->chiSquare()*
 					      hist->GetNbinsX(),
-					      hist->GetNbinsX()-npars) 
+					      hist->GetNbinsX()-npars)
 	      << std::endl;
   }
 
@@ -166,6 +165,8 @@ void fitter2017(const char* filename, const char* histname,
     p->plotOn(frame);
     frame->Draw();
 
+    workspace->import(data);
+    workspace->import(*p);
   }
 
   workspace->writeToFile(Form("roofit_%s_%d_%d_%d.root",
