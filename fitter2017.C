@@ -17,7 +17,7 @@ root -l
 root [1] .L fitter2017.C++
 root [2] fitter2017("energy_hists.root","energy_tree_EJ_260",0,1)
 
-A binne fit with rebinning (4 bins merge into 1), using fit model w/ afterpulsing and dark current:
+A binned fit with rebinning (4 bins merge into 1), using fit model w/ afterpulsing and dark current:
 
 root -l 
 root [1] .L fitter2017.C++
