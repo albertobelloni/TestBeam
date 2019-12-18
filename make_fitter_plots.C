@@ -17,6 +17,8 @@
 R__LOAD_LIBRARY(libSiPMCalibSiPMCalc)
 R__LOAD_LIBRARY(libSiPMCalibInvSqCalc)
 
+using namespace RooFit;
+
 /*/////////////////////////////////////////////////////////////////////////////
 
 Typical usage:
@@ -28,9 +30,6 @@ The roofit file shall contain a workspace with data and fit parameters
 (fit performed with SiPMPdf object)
 
 PROBLEMS:
-- I cannot seem to be able to understand at which level and how are ROOT
-libraries loaded: macro complains that cannot create RooAbsPdf; it still
-produces plots...
 - vane attempt at changing X axis range of RooPlot frame object: it does
 modify the axis titles and offset, just seems not to like the range change
 
@@ -38,13 +37,15 @@ modify the axis titles and offset, just seems not to like the range change
 
 
 void make_fitter_plots(const char* filename) {
-  
-  TFile *file = TFile::Open(filename);
 
-  cout << "\n\n\n\n" << __LINE__ << "\n\n\n\n";
+  TFile *file = TFile::Open(filename);
+  if (!file) {
+    std::cout << "File " << filename << " does not seem to exist\n";
+    return;
+  }
+
   // This assumes that the workspace name is "w"
   RooWorkspace *workspace = (RooWorkspace*)file->Get("w");
-  cout << "\n\n\n\n" << __LINE__ << "\n\n\n\n";
 
   RooRealVar *x      = workspace->var("x");
 

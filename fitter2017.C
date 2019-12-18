@@ -134,7 +134,6 @@ void fitter2017(const char* filename, const char* histname,
     frame->Draw();
 
     workspace->import(data);
-    workspace->import(*p);
 
     int npars = 6 + 2*fitmodel;
     std::cout << std::endl
@@ -142,7 +141,7 @@ void fitter2017(const char* filename, const char* histname,
 	      << "CHI2 Prob: " << TMath::Prob(frame->chiSquare()*
 					      hist->GetNbinsX(),
 					      hist->GetNbinsX()-npars)
-	      << std::endl;
+	      << std::endl << std::endl;
   }
 
   if (fittype==UNBINNED) {
@@ -166,8 +165,20 @@ void fitter2017(const char* filename, const char* histname,
     frame->Draw();
 
     workspace->import(data);
-    workspace->import(*p);
   }
+
+  workspace->import(ped);
+  workspace->import(gain);
+  workspace->import(s0);
+  workspace->import(s1);
+  workspace->import(mean);
+  workspace->import(lambda);
+
+  workspace->import(alpha);
+  workspace->import(beta);
+
+  workspace->import(dcfrac);
+  workspace->import(eps);
 
   workspace->writeToFile(Form("roofit_%s_%d_%d_%d.root",
 			      histname,fitmodel,fittype,rebin));
