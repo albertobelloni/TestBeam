@@ -3,7 +3,6 @@
 universe = vanilla
 
 RUN_DIR=/home/abelloni/CMSSW_10_2_0/src/UserCode/TestBeam
-TILE_TO_FIT=EJ_260_2P
 
 Executable = $(RUN_DIR)/condor_fit.sh
 
@@ -16,10 +15,10 @@ Should_Transfer_Files = NO
 
 Requirements = TARGET.FileSystemDomain == "privnet"
 
-Output =$(RUN_DIR)/$(TILE_TO_FIT).stdout
-Error  =$(RUN_DIR)/$(TILE_TO_FIT).stderr
-Log    =$(RUN_DIR)/$(TILE_TO_FIT).log
+Output =$(RUN_DIR)/$(Process).stdout
+Error  =$(RUN_DIR)/$(Process).stderr
+Log    =$(RUN_DIR)/$(Process).log
 
-Arguments  = $(RUN_DIR) $(TILE_TO_FIT) 
+Arguments  = $(RUN_DIR) $(Process) 
 
-Queue 1
+Queue 8
