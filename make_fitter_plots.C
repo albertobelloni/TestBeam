@@ -17,8 +17,6 @@
 R__LOAD_LIBRARY(libSiPMCalibSiPMCalc)
 R__LOAD_LIBRARY(libSiPMCalibInvSqCalc)
 
-using namespace RooFit;
-
 /*/////////////////////////////////////////////////////////////////////////////
 
 Typical usage:

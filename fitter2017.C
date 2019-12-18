@@ -57,6 +57,7 @@ root [2] fitter2017("energy_hists.root","en_bins_EJ_260",2,0,4)
 
 #include "SiPMCalib/SiPMCalc/interface/SiPMPdf.hpp"
 #include <cstdlib>
+#include <cstring>
 
 // FULL fit includes afterpulsing and dark current parameters
 enum {BASELINE=0, WITHAFTERPULSING, FULL};
@@ -104,24 +105,28 @@ void fitter2017(const char* filename, const char* histname,
 
   RooWorkspace *workspace = new RooWorkspace("w","fitter2017_workspace");
 
+  TFile *file = TFile::Open(filename);
+  if (!file) {
+    std::cout << "File " << filename << " does not seem to exist\n";
+    return;
+  }
+
   if (fittype==BINNED) {
 
     // OPEN HISTOGRAM
-    TFile *file = TFile::Open(filename);
     TH1F *hist = (TH1F*)file->Get(histname);
     if(!hist) {
       std::cout << "The histogram pointer is null:"
-	" is the histogram name correct?\n";
+		<< " is the histogram name correct?\n";
       return;
     }
     hist->Rebin(rebin);
 
     if(hist->GetDimension()==0) {
       std::cout << "The dimension of the histogram is 0:"
-	" are you sure you are not passing a tree pointer here?\n";
+		<<" are you sure you are not passing a tree pointer here?\n";
       return;
     }
-
     RooDataHist data("data","data", RooArgSet(x), hist );
 
     // Running fit independent estimates on ped, gain, s0, s1, mean, lambda
@@ -147,10 +152,14 @@ void fitter2017(const char* filename, const char* histname,
   if (fittype==UNBINNED) {
 
     // OPEN TREE
-    TFile *file = TFile::Open(filename);
     TTree *tree = (TTree*)file->Get(histname);
     if(!tree) {
       std::cout << "The tree pointer is null: is the tree name correct?\n";
+      return;
+    }
+    if(strchr(tree->ClassName(),'H')) {
+      std::cout << "The tree is a TH1F: are both the fit type and "
+		<< "the tree name correct?\n";
       return;
     }
     RooDataSet data("data","data", tree, RooArgSet(x), "x>-50 && x<600" );
@@ -167,18 +176,24 @@ void fitter2017(const char* filename, const char* histname,
     workspace->import(data);
   }
 
-  workspace->import(ped);
-  workspace->import(gain);
-  workspace->import(s0);
-  workspace->import(s1);
-  workspace->import(mean);
-  workspace->import(lambda);
-
-  workspace->import(alpha);
-  workspace->import(beta);
-
-  workspace->import(dcfrac);
-  workspace->import(eps);
+  // Quite awkward, the idea is that we want all variables if full fit,
+  // skip the first two if w/ afterpulsing, and skip the first four
+  // if doing using baseline model
+  switch (fitmodel) {
+  case FULL:
+    workspace->import(dcfrac);
+    workspace->import(eps);
+  case WITHAFTERPULSING:
+    workspace->import(alpha);
+    workspace->import(beta);
+  case BASELINE:
+    workspace->import(ped);
+    workspace->import(gain);
+    workspace->import(s0);
+    workspace->import(s1);
+    workspace->import(mean);
+    workspace->import(lambda);
+  }
 
   workspace->writeToFile(Form("roofit_%s_%d_%d_%d.root",
 			      histname,fitmodel,fittype,rebin));
