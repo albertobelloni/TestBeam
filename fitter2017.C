@@ -10,6 +10,7 @@ Quick summary:
     git clone https://github.com/yimuchen/UserUtils 
     git clone https://github.com/yimuchen/SiPMCalib
     scram b -j 12
+    cmsenv
 
 Typical usage (unbinned fit, fit function w/o afterpulsing nor dark current):
 
@@ -79,9 +80,12 @@ void fitter2017(const char* filename, const char* histname,
   RooRealVar ped( "ped", "ped",            -2,  -10, 10 );
   RooRealVar gain( "gain", "gain",         40,    0, 1000 );
   RooRealVar s0( "s0", "s0",               12,  0.1, 100 );
-  RooRealVar s1( "s1", "s1",             0.01,    0, 1 );
-  RooRealVar mean( "mean", "mean",         25, 0.01, 50 );
+  RooRealVar s1( "s1", "s1",             0.01,    0, 10);
+  RooRealVar mean( "mean", "mean",          5, 0.01, 50 );
   RooRealVar lambda( "lambda", "lambda",  0.4,    0, 0.50 );
+
+  s1.setConstant(true);
+  s1.setVal(0);
 
   RooRealVar alpha( "alpha", "alpha", 0, 0.5 );
   RooRealVar beta ( "beta", "beta", 10, 20000 );
