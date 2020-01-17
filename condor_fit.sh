@@ -15,13 +15,10 @@
 #
 ################################################################################
 
-
-
-cd $1
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 eval `scramv1 runtime -sh`
 
-root -b -q run_fitter.C\(\"energy_tree_$2\"\)
+root -b -q run_fitter.C\(\"energy_tree_$1\"\)
 
 exit
 

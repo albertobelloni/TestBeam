@@ -2,23 +2,24 @@
 
 universe = vanilla
 
-RUN_DIR=/home/abelloni/CMSSW_10_2_0/src/UserCode/TestBeam
-
-Executable = $(RUN_DIR)/condor_fit.sh
+Executable = condor_fit.sh
 
 getenv = True
 
 notify_user = abelloni@umd.edu
 notification = always
 
+on_exit_hold = (ExitBySignal == False) && (ExitCode != 0)
+periodic_release = NumJobStarts<30 && ((CurrentTime - EnteredCurrentStatus) > 10)
+
 Should_Transfer_Files = NO
 
 Requirements = TARGET.FileSystemDomain == "privnet"
 
-Output =$(RUN_DIR)/$(Process).stdout
-Error  =$(RUN_DIR)/$(Process).stderr
-Log    =$(RUN_DIR)/$(Process).log
+Output = $(Process).stdout
+Error  = $(Process).stderr
+Log    = $(Process).log
 
-Arguments  = $(RUN_DIR) $(Process) 
+Arguments  = $(Process)
 
 Queue 8

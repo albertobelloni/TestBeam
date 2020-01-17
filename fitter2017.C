@@ -65,7 +65,7 @@ enum {BASELINE=0, WITHAFTERPULSING, FULL};
 enum {BINNED=0, UNBINNED};
 
 void fitter2017(const char* filename, const char* histname,
-		int fitmodel=BASELINE, int fittype=UNBINNED,
+		int fitmodel=FULL, int fittype=UNBINNED,
 		const int rebin=1) {
 
   // This might need to be loaded before calling the macro file.
