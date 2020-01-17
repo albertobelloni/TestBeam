@@ -2,7 +2,7 @@
 
 universe = vanilla
 
-Executable = condor_fit.sh
+Executable = condor_fits.sh
 
 getenv = True
 
