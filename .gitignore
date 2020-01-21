@@ -1,0 +1,4 @@
+*.py[cod]
+__init__.py
+*_C.so
+*_C.d
