@@ -10,7 +10,7 @@ notify_user = abelloni@umd.edu
 notification = always
 
 on_exit_hold = (ExitBySignal == False) && (ExitCode != 0)
-periodic_release = NumJobStarts<30 && ((CurrentTime - EnteredCurrentStatus) > 10)
+periodic_release = NumJobStarts<100 && ((CurrentTime - EnteredCurrentStatus) > 10)
 
 Should_Transfer_Files = NO
 
