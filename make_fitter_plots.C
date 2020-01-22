@@ -76,7 +76,7 @@ void make_fitter_plots(const char* filename, bool logy = false) {
   data->plotOn(frame);
   pdf->plotOn(frame);
 
-  frame->GetXaxis()->SetTitle("Energy [fC]");
+  frame->GetXaxis()->SetTitle("Charge [fC]");
   frame->GetXaxis()->SetTitleOffset(1.0);
   if(!strchr(filename,'F')) // x range for finger tiles
     frame->GetXaxis()->SetRangeUser(-50,350);
@@ -88,18 +88,23 @@ void make_fitter_plots(const char* filename, bool logy = false) {
   canvas->SetLogy(logy);
   frame->Draw();
   canvas->Print(TString(filename).
-		ReplaceAll("roofit","canvas").ReplaceAll(".root",".png"));
+		ReplaceAll("roofit","canvas").
+		ReplaceAll(".root",Form("%s.png",logy?"_log":"_lin")));
   canvas->Print(TString(filename).
-		ReplaceAll("roofit","canvas").ReplaceAll(".root",".pdf"));
+		ReplaceAll("roofit","canvas").
+		ReplaceAll(".root",Form("%s.pdf",logy?"_log":"_lin")));
   // printing to .C does not work well; RooFit automatically
-  // adds "[x]" to object names... (the last ReplaceAll is left for consistency
+  // adds "[x]" to object names...
   canvas->Print(TString(filename).
-		ReplaceAll("roofit","canvas").ReplaceAll(".root",".root"));
+		ReplaceAll("roofit","canvas").
+		ReplaceAll(".root",Form("%s.root",logy?"_log":"_lin")));
 
   std::cout << "\n\n"
-	    << " Tile/fit: " << filename << "\n\n"
-	    << " MEAN NUMBER P.E.: " << mean->getValV() 
+	    << " Tile/fit: " << filename << "\n"
+	    << "\n MEAN NUMBER P.E.: " << mean->getValV()
 	    << " +/- " << mean->getError()
+	    << "\n CROSS-TALK PROBABILITY: " << lambda->getValV()
+	    << " +/- " << lambda->getError()
 	    << "\n\n";
 
 
