@@ -34,7 +34,7 @@ modify the axis titles and offset, just seems not to like the range change
  */////////////////////////////////////////////////////////////////////////////
 
 
-void make_fitter_plots(const char* filename) {
+void make_fitter_plots(const char* filename, bool logy = false) {
 
   TFile *file = TFile::Open(filename);
   if (!file) {
@@ -85,6 +85,7 @@ void make_fitter_plots(const char* filename) {
   frame->GetYaxis()->SetTitle("Entries");
 
   TCanvas* canvas = new TCanvas("canvas","",800,500);
+  canvas->SetLogy(logy);
   frame->Draw();
   canvas->Print(TString(filename).
 		ReplaceAll("roofit","canvas").ReplaceAll(".root",".png"));
