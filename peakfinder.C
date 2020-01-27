@@ -42,14 +42,18 @@ The fit function is a plain sum of Gaussians, the parameters are:
 #include "TTree.h"
 #include "TH1.h"
 #include "TF1.h"
+#include "TLine.h"
 #include "TSpectrum.h"
 #include "TVirtualFitter.h"
 #include "TFile.h"
+#include "TMath.h"
+
+#define DEBUG false
 
 using std::cout;
 using std::endl;
 
-Int_t NPEAKS = 10;
+int NPEAKS = 20;
 Double_t fpeaks(Double_t *x, Double_t *par) {
   Double_t result = 0.;
   for (Int_t p=0;p<NPEAKS;p++) {
@@ -95,25 +99,27 @@ void peakfinder(const char* filename,
   printf("\n\nFound %d peaks\n\n",found);
 
   // Let us take the initial parameters for the fit from found peaks
-  double parms[3*NPEAKS];
+  double parms[3*found];
   NPEAKS=0; // why? why?!?
   
-  Double_t *xpeaks = spec->GetPositionX();
+  double *xpeaks = spec->GetPositionX();
   for (int p=0;p<found;p++) {
-    Double_t xp = xpeaks[p];
-    Double_t yp = hist->GetBinContent(hist->GetXaxis()->FindBin(xp));
+    double xp = xpeaks[p];
+    double yp = hist->GetBinContent(hist->GetXaxis()->FindBin(xp));
     if (xp<-10) continue;
-    parms[3*NPEAKS+0] = yp*sqrt(2*TMath::Pi())*10.;
+    parms[3*NPEAKS+0] = 0.8*yp*sqrt(2*TMath::Pi())*8;
     parms[3*NPEAKS+1] = xp;
-    parms[3*NPEAKS+2] = 10;
+    parms[3*NPEAKS+2] = 8;
     NPEAKS++;
   }
   printf("Found %d useful peaks to fit\n\n",NPEAKS);
 
-  printf("Peak\tNormalization\tMean\tWidth\n");
-  for (int p=0;p<NPEAKS;p++)
-    printf("%d\t%12.1f\t%.1f\t%.1f\n",p,parms[3*p],parms[3*p+1],parms[3*p+2]);
-  printf("\n");
+  if(DEBUG) {
+    printf("Peak\tNormalization\tMean\tWidth\n");
+    for (int p=0;p<NPEAKS;p++)
+      printf("%d\t%12.1f\t%.1f\t%.1f\n",p,parms[3*p],parms[3*p+1],parms[3*p+2]);
+    printf("\n");
+  }
 
   // Now we build the fit function
   TF1 *func = new TF1("func",fpeaks,-40,400,3*NPEAKS);
@@ -124,7 +130,7 @@ void peakfinder(const char* filename,
   func->SetParameters(parms);
   // Force normalization and widths to be positive
   for (int p=0;p<NPEAKS;p++) {
-    func->SetParLimits(3*p+0,0,2e5);
+    func->SetParLimits(3*p+0,0,2.5e6);
     //func->SetParLimits(3*p+2,0,1e2);
 
     func->SetParName(3*p+0,Form("Norm_%d",p));
@@ -135,28 +141,124 @@ void peakfinder(const char* filename,
   func->SetNpx(1000);
   hist->Fit("func","LER");
 
+  // Darn, I really need to do some sorting...
+  int sorted[NPEAKS];
+  double peak_loc[NPEAKS];
+  for (int p=0;p<NPEAKS;++p) {
+    sorted[p]=0;
+    peak_loc[p]=func->GetParameter(3*p+1);
+  }
+  TMath::Sort(NPEAKS,peak_loc,sorted,false);
+
+  // Let us draw one Gaussian for each peak, to check
+  // that fit was successful
+  for (int p=0;p<NPEAKS;++p) {
+    if (DEBUG) {
+      printf("\n sorted? p=%d, sorted[p]=%d, "
+	     "peak_loc[p]=%f, peak_loc[sorted[p]]=%f, "
+	     "norm[p]=%f, norm[sorted[p]]=%f, "
+	     "mean[p]=%f, mean[sorted[p]]=%f\n",
+	     p, sorted[p], peak_loc[p], peak_loc[sorted[p]],
+	     func->GetParameter(3*p),
+	     func->GetParameter(3*sorted[p]),
+	     func->GetParameter(3*p+1),
+	     func->GetParameter(3*sorted[p]+1));
+    }
+    auto peak_gauss = new TF1(Form("peak_gauss_%d",p),"[area] * "
+		      "ROOT::Math::normal_pdf(x, [sigma], [mean]) ",
+		      -50, 550);
+    peak_gauss->SetParameter("area",func->GetParameter(3*p));
+    peak_gauss->SetParameter("mean",func->GetParameter(3*p+1));
+    peak_gauss->SetParameter("sigma",func->GetParameter(3*p+2));
+    peak_gauss->SetLineColor(p % 9 + 1);
+    peak_gauss->SetLineStyle(p >9?2:1);
+    peak_gauss->SetNpx(1000);
+    peak_gauss->Draw("same");
+  }
+
   // Calculate the average number of photo-electrons
-  // Need to skip the first peak, corresponding to pedestal
+  // Need to skip the pedestal peak
   double pe_numerator = 0;
   double pe_denominator = 0;
   double gain_estimate = 0;
-  for (int p=1;p<NPEAKS;p++) {
-    pe_numerator += p * func->GetParameter(3*p);
-    pe_denominator += func->GetParameter(3*p);
+  for (int p=0;p<NPEAKS;++p) {
+    // Skip the pedestal
+    if (func->GetParameter(3*sorted[p]+1)<20) continue;
+    pe_numerator += p * func->GetParameter(3*sorted[p]);
+    pe_denominator += func->GetParameter(3*sorted[p]);
+
+    // Skip adding peak if normalization higher than twice the previous one
+    // it means we have a problem with fit
+    // Usually also the peak after it are bad, let us break...
+    if (func->GetParameter(3*sorted[p])>
+	func->GetParameter(3*sorted[p-1])*2)
+	break;
+
+    if (DEBUG)
+      printf("\n p=%d, peak_loc[sorted[p]]=%f, "
+	     "mean[sorted[p]]=%f, "
+	     "norm[sorted[p]]=%f\n",
+	     p, peak_loc[sorted[p]],
+	     func->GetParameter(3*sorted[p]+1),
+	     func->GetParameter(3*sorted[p]));
+
+    // Let us draw a line on top of each Gaussian used to calculate
+    // average number of photo-electrons
+    auto line_gauss = new TLine(func->GetParameter(3*sorted[p]+1),
+				hist->GetMinimum(),
+			        func->GetParameter(3*sorted[p]+1),
+				hist->GetMaximum());
+    line_gauss->SetLineColor(sorted[p] % 9 + 1);
+    line_gauss->SetLineStyle(sorted[p] >9?2:1);
+    line_gauss->SetLineWidth(2);
+    line_gauss->Draw("same");
+
+    // Note: p=0 should correspond, after ordering the list of peaks,
+    // to the pedestal peak: we should have skipped it already
+    // (look at "continue" above: want Gaussian mean above 20fC)
     if (p>1)
       // add to gain estimate the difference between each pair of peaks
-      gain_estimate += func->GetParameter(3*p+1)-func->GetParameter(3*p-2);
+      gain_estimate +=
+	func->GetParameter(3*sorted[p]+1)-
+	func->GetParameter(3*sorted[p-1]+1);
   }
   gain_estimate/=(NPEAKS-1); // there are NPEAKS-1 pairs of neighboring peaks
+  // Upon noting that the peaks are ordered by height, and not by location,
+  // the algorithm above is sometimes wrong. Since the physics-driven fit
+  // returns a gain between 41.6 and 39.9 for all tiles, let me use 41.0 here,
+  // and accept an up to 3% mistake in the yield estimate
+  gain_estimate = 41.;
 	
-  printf("\nAverage number of p.e. from fit: %f\n",pe_numerator/pe_denominator);
+  printf("\nAverage number of p.e. from fit: %.3f\n",
+	 pe_numerator/pe_denominator);
 
   // Some machinery to calculate mean: want to use only the range with
   // at least 1 p.e.
   hist->GetXaxis()->SetRangeUser(25,600);
-  printf("\nAverage number of p.e. from TH1::Mean: %f\n",
+  printf("\nAverage number of p.e. from TH1::Mean: %.3f\n",
 	 hist->GetMean()/gain_estimate);
-  printf("Estimated gain: %f\n\n",gain_estimate);
+  printf("Estimated gain: %.3f\n\n",gain_estimate);
   hist->GetXaxis()->SetRangeUser(-50,550);
+
+  return;
+
+}
+
+
+void run_peakfinder(const char* filename) {
+
+  const char* tilenames[8] =
+    {"energy_tree_EJ_200",
+     "energy_tree_EJ_260",
+     "energy_tree_EJ_260_2P",
+     "energy_tree_SCSN_81F1",
+     "energy_tree_SCSN_81F2",
+     "energy_tree_SCSN_81F3",
+     "energy_tree_SCSN_81F4",
+     "energy_tree_SCSN_81S"};
+
+  for (int i=0;i<8;peakfinder(filename,tilenames[i++]));
+
+  return;
 
 }
