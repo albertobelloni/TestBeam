@@ -66,7 +66,7 @@ Double_t fpeaks(Double_t *x, Double_t *par) {
 }
 
 void peakfinder(const char* filename,
-		const char* tilename) {
+		const char* treename) {
 
   
   TFile *file = TFile::Open(filename);
@@ -75,7 +75,7 @@ void peakfinder(const char* filename,
     return;
   }
 
-  TTree *tree = (TTree*)file->Get(tilename);
+  TTree *tree = (TTree*)file->Get(treename);
   if(!tree) {
     std::cout << "The tree pointer is null: is the tree name correct?\n";
     return;
@@ -86,7 +86,10 @@ void peakfinder(const char* filename,
       return;
   }
   
-  const char* histname = Form("hist_%s",tilename);
+  TCanvas *canvas = new TCanvas("canvas","",800,600);
+  canvas->Draw();
+
+  const char* histname = Form("hist_%s",treename);
   TH1F *hist = new TH1F(histname,"",100,-50,550);
   tree->Project(histname,"x"); // x is the variable inside the relevant tree
 
@@ -140,6 +143,8 @@ void peakfinder(const char* filename,
 
   func->SetNpx(1000);
   hist->Fit("func","LER");
+  func->SetLineWidth(4);
+  func->Draw("same");
 
   // Darn, I really need to do some sorting...
   int sorted[NPEAKS];
@@ -240,6 +245,29 @@ void peakfinder(const char* filename,
   printf("Estimated gain: %.3f\n\n",gain_estimate);
   hist->GetXaxis()->SetRangeUser(-50,550);
 
+  // Minimal beautification of the histogram
+  hist->GetXaxis()->SetTitle("Charge [fC]");
+  hist->GetYaxis()->SetTitle("Events");
+  hist->GetXaxis()->SetTitleOffset(1.1);
+  hist->GetYaxis()->SetTitleOffset(1);
+  hist->GetYaxis()->SetMaxDigits(3);
+  hist->SetLineWidth(3);
+  hist->Draw("hist,same");
+
+  canvas->Print(TString(treename).
+		ReplaceAll("energy_tree","canvas_gaussfit").
+		Append(".root"));
+  // NOTE: problems with C file...
+  canvas->Print(TString(treename).
+		ReplaceAll("energy_tree","canvas_gaussfit").
+		Append(".C"));
+  canvas->Print(TString(treename).
+		ReplaceAll("energy_tree","canvas_gaussfit").
+		Append(".pdf"));
+  canvas->Print(TString(treename).
+		ReplaceAll("energy_tree","canvas_gaussfit").
+		Append(".png"));
+
   return;
 
 }
@@ -247,7 +275,7 @@ void peakfinder(const char* filename,
 
 void run_peakfinder(const char* filename) {
 
-  const char* tilenames[8] =
+  const char* treenames[8] =
     {"energy_tree_EJ_200",
      "energy_tree_EJ_260",
      "energy_tree_EJ_260_2P",
@@ -257,7 +285,7 @@ void run_peakfinder(const char* filename) {
      "energy_tree_SCSN_81F4",
      "energy_tree_SCSN_81S"};
 
-  for (int i=0;i<8;peakfinder(filename,tilenames[i++]));
+  for (int i=0;i<8;peakfinder(filename,treenames[i++]));
 
   return;
 
