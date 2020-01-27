@@ -16,10 +16,10 @@ Should_Transfer_Files = NO
 
 Requirements = TARGET.FileSystemDomain == "privnet"
 
-Output = condorfit_$(Cluster)/$(Process).stdout
-Error  = condorfit_$(Cluster)/$(Process).stderr
-Log    = condorfit_$(Cluster)/$(Process).log
+Output = $(Process).stdout
+Error  = $(Process).stderr
+Log    = $(Process).log
 
-Arguments  = $(Process)
+Arguments  = $(Process) $(Cluster)
 
 Queue 8

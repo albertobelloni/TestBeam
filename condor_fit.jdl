@@ -2,7 +2,7 @@
 
 universe = vanilla
 
-TILE_TO_FIT=EJ_260_2P
+TILE_TO_FIT=SCSN_81F1
 
 Executable = condor_fit.sh
 
@@ -18,10 +18,10 @@ Should_Transfer_Files = NO
 
 Requirements = TARGET.FileSystemDomain == "privnet"
 
-Output = condorfit_$(Cluster)/$(TILE_TO_FIT).stdout
-Error  = condorfit_$(Cluster)/$(TILE_TO_FIT).stderr
-Log    = condorfit_$(Cluster)/$(TILE_TO_FIT).log
+Output = $(TILE_TO_FIT).stdout
+Error  = $(TILE_TO_FIT).stderr
+Log    = $(TILE_TO_FIT).log
 
-Arguments  = $(TILE_TO_FIT)
+Arguments  = $(TILE_TO_FIT) $(Cluster)
 
 Queue 1
