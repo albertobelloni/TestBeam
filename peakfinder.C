@@ -161,9 +161,9 @@ void peakfinder(const char* filename,
 
   // THIS IS THE FIT:
   TFitResultPtr fit = hist->Fit("func","RS");
-    
+
   // Repeat fit until successful...
-  while (fit->CovMatrixStatus()!=3 || 
+  while (fit->CovMatrixStatus()!=3 ||
 	 fit->Status()!=0 ||
 	 fit->IsValid()==0)
     fit = hist->Fit("func","RS");
