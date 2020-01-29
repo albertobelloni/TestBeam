@@ -127,7 +127,10 @@ void peakfinder(const char* filename,
   }
 
   // Now we build the fit function
-  TF1 *func = new TF1("func",fpeaks,-40,400,3*NPEAKS);
+  double fit_range_max = 400;
+  if (strcmp(treename,"energy_tree_EJ_200")==0)
+    fit_range_max=500;
+  TF1 *func = new TF1("func",fpeaks,-40,fit_range_max,3*NPEAKS);
 
   // We may have more than the default 25 parameters
   TVirtualFitter::Fitter(hist,3*NPEAKS);
@@ -147,10 +150,10 @@ void peakfinder(const char* filename,
   }
 
   // Let us also fix to 0 the normalization of the Gaussians
-  // which are out of the fitting range (i.e., if mean-2*width<400)
+  // which are out of the fitting range (i.e., if mean-2*width<fit_range_max)
   // I hope this will make the fit more sensible
   for (int p=0;p<NPEAKS;p++)
-    if (parms[3*p+1]-2*parms[3*p+2]>400) {
+    if (parms[3*p+1]-2*parms[3*p+2]>fit_range_max) {
       func->FixParameter(3*p, 0);
       func->FixParameter(3*p+1, 500);
       func->FixParameter(3*p+2,  10);
@@ -172,7 +175,8 @@ void peakfinder(const char* filename,
   // print on the screen that the covariance matrix is approximate, but
   // still returns a perfect covariance matrix status, let us repeat
   // the fit by hand for those tiles we know need a small push
-  if (strcmp(treename,"energy_tree_SCSN_81F1")==0||
+  if (strcmp(treename,"energy_tree_EJ_200")==0||
+      strcmp(treename,"energy_tree_SCSN_81F1")==0||
       strcmp(treename,"energy_tree_SCSN_81F3")==0)
     fit = hist->Fit("func","RS");
 
@@ -226,8 +230,6 @@ void peakfinder(const char* filename,
   for (int p=0;p<NPEAKS;++p) {
     // Skip the pedestal
     if (func->GetParameter(3*sorted[p]+1)<20) continue;
-    pe_numerator += p * func->GetParameter(3*sorted[p]);
-    pe_denominator += func->GetParameter(3*sorted[p]);
 
     // Skip adding peak if normalization higher than twice the previous one
     // it means we have a problem with fit
@@ -239,8 +241,11 @@ void peakfinder(const char* filename,
     // Skip adding peak if it is outside the fitting range
     // (it should be a rather small correction, even if the fit were good)
     if (func->GetParameter(3*sorted[p]+1)
-	-2*func->GetParameter(3*sorted[p]+2)>400)
+	-2*func->GetParameter(3*sorted[p]+2)>fit_range_max)
       continue;
+
+    pe_numerator += p * func->GetParameter(3*sorted[p]);
+    pe_denominator += func->GetParameter(3*sorted[p]);
 
     if (DEBUG)
       printf("\n p=%d, peak_loc[sorted[p]]=%f, "
