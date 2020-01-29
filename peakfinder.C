@@ -45,8 +45,10 @@ The fit function is a plain sum of Gaussians, the parameters are:
 #include "TLine.h"
 #include "TSpectrum.h"
 #include "TVirtualFitter.h"
+#include "TFitResult.h"
 #include "TFile.h"
 #include "TMath.h"
+#include "string.h"
 
 #define DEBUG false
 
@@ -130,19 +132,54 @@ void peakfinder(const char* filename,
   // We may have more than the default 25 parameters
   TVirtualFitter::Fitter(hist,3*NPEAKS);
 
+  // The lines below do not seem to work
+  //int exreturn = 0;
+  //TVirtualFitter::GetFitter()->ExecuteCommand("SET STR 2",NULL,exreturn);
+
   func->SetParameters(parms);
-  // Force normalization and widths to be positive
+  // Force normalization to be positive
   for (int p=0;p<NPEAKS;p++) {
     func->SetParLimits(3*p+0,0,2.5e6);
-    //func->SetParLimits(3*p+2,0,1e2);
 
     func->SetParName(3*p+0,Form("Norm_%d",p));
     func->SetParName(3*p+1,Form("Mean_%d",p));
     func->SetParName(3*p+2,Form("Width_%d",p));
   }
 
+  // Let us also fix to 0 the normalization of the Gaussians
+  // which are out of the fitting range (i.e., if mean-2*width<400)
+  // I hope this will make the fit more sensible
+  for (int p=0;p<NPEAKS;p++)
+    if (parms[3*p+1]-2*parms[3*p+2]>400) {
+      func->FixParameter(3*p, 0);
+      func->FixParameter(3*p+1, 500);
+      func->FixParameter(3*p+2,  10);
+    }
+
+  // The following line makes the function smoother, when drawn
   func->SetNpx(1000);
-  hist->Fit("func","LER");
+
+  // THIS IS THE FIT:
+  TFitResultPtr fit = hist->Fit("func","RS");
+    
+  // Repeat fit until successful...
+  while (fit->CovMatrixStatus()!=3 || 
+	 fit->Status()!=0 ||
+	 fit->IsValid()==0)
+    fit = hist->Fit("func","RS");
+
+  // The trick of the experienced physicist: since MIGRAD seems to
+  // print on the screen that the covariance matrix is approximate, but
+  // still returns a perfect covariance matrix status, let us repeat
+  // the fit by hand for those tiles we know need a small push
+  if (strcmp(treename,"energy_tree_SCSN_81F1")==0||
+      strcmp(treename,"energy_tree_SCSN_81F3")==0)
+    fit = hist->Fit("func","RS");
+
+  // At this point, all fits are ok, with the exception of:
+  // SCSN_81F4: uncertainty 1.8%
+  // EJ_260: unceratinty 3.0%
+
   func->SetLineWidth(4);
   func->Draw("same");
 
@@ -199,6 +236,12 @@ void peakfinder(const char* filename,
 	func->GetParameter(3*sorted[p-1])*2)
 	break;
 
+    // Skip adding peak if it is outside the fitting range
+    // (it should be a rather small correction, even if the fit were good)
+    if (func->GetParameter(3*sorted[p]+1)
+	-2*func->GetParameter(3*sorted[p]+2)>400)
+      continue;
+
     if (DEBUG)
       printf("\n p=%d, peak_loc[sorted[p]]=%f, "
 	     "mean[sorted[p]]=%f, "
@@ -234,13 +277,14 @@ void peakfinder(const char* filename,
   // and accept an up to 3% mistake in the yield estimate
   gain_estimate = 41.;
 	
-  printf("\nAverage number of p.e. from fit: %.3f\n",
+  printf("\n\nTile: %s\n",treename);
+  printf("Average number of p.e. from fit: %.3f\n",
 	 pe_numerator/pe_denominator);
 
   // Some machinery to calculate mean: want to use only the range with
   // at least 1 p.e.
   hist->GetXaxis()->SetRangeUser(25,600);
-  printf("\nAverage number of p.e. from TH1::Mean: %.3f\n",
+  printf("Average number of p.e. from TH1::Mean: %.3f\n",
 	 hist->GetMean()/gain_estimate);
   printf("Estimated gain: %.3f\n\n",gain_estimate);
   hist->GetXaxis()->SetRangeUser(-50,550);
