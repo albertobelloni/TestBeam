@@ -43,6 +43,7 @@ The fit function is a plain sum of Gaussians, the parameters are:
 #include "TH1.h"
 #include "TF1.h"
 #include "TLine.h"
+#include "TLatex.h"
 #include "TSpectrum.h"
 #include "TVirtualFitter.h"
 #include "TFitResult.h"
@@ -257,10 +258,20 @@ void peakfinder(const char* filename,
 
     // Let us draw a line on top of each Gaussian used to calculate
     // average number of photo-electrons
+    // The line goes from the minimum of the histogram to 30% more
+    // of each Gaussian peak (or the maximum of the histogram,
+    // whichever smaller)
     auto line_gauss = new TLine(func->GetParameter(3*sorted[p]+1),
 				hist->GetMinimum(),
 			        func->GetParameter(3*sorted[p]+1),
-				hist->GetMaximum());
+				hist->GetMaximum()<
+				func->GetParameter(3*sorted[p]+0)/
+				(TMath::Sqrt(2*TMath::Pi())*
+				 func->GetParameter(3*sorted[p]+2))*1.3?
+				hist->GetMaximum():
+				func->GetParameter(3*sorted[p]+0)/
+				(TMath::Sqrt(2*TMath::Pi())*
+				 func->GetParameter(3*sorted[p]+2))*1.3);
     line_gauss->SetLineColor(sorted[p] % 9 + 1);
     line_gauss->SetLineStyle(sorted[p] >9?2:1);
     line_gauss->SetLineWidth(2);
@@ -303,19 +314,51 @@ void peakfinder(const char* filename,
   hist->SetLineWidth(3);
   hist->Draw("hist,same");
 
+  hist->GetXaxis()->SetRangeUser(25,600);
+  TLatex label;
+  label.SetNDC();
+  label.SetTextSize(0.05);
+  label.SetTextAlign(31); // right-aligned; center-aligned
+  label.DrawLatex(0.91,0.875,Form("<p.e.> hist: %.3f",
+				  hist->GetMean()/gain_estimate));
+  label.DrawLatex(0.91,0.825,Form("<p.e.> fit: %.3f",
+				  pe_numerator/pe_denominator));
+  label.DrawLatex(0.91,0.775,TString(treename).
+		  ReplaceAll("energy_tree_","").
+		  ReplaceAll("_","-"));
+  hist->GetXaxis()->SetRangeUser(-50,550);
+
   canvas->Print(TString(treename).
-		ReplaceAll("energy_tree","canvas_gaussfit").
+		ReplaceAll("energy_tree","canvas_gaussfit_lin").
 		Append(".root"));
   // NOTE: problems with C file...
   canvas->Print(TString(treename).
-		ReplaceAll("energy_tree","canvas_gaussfit").
+		ReplaceAll("energy_tree","canvas_gaussfit_lin").
 		Append(".C"));
   canvas->Print(TString(treename).
-		ReplaceAll("energy_tree","canvas_gaussfit").
+		ReplaceAll("energy_tree","canvas_gaussfit_lin").
 		Append(".pdf"));
   canvas->Print(TString(treename).
-		ReplaceAll("energy_tree","canvas_gaussfit").
+		ReplaceAll("energy_tree","canvas_gaussfit_lin").
 		Append(".png"));
+
+  canvas->SetLogy(true);
+  canvas->Update();
+
+  canvas->Print(TString(treename).
+		ReplaceAll("energy_tree","canvas_gaussfit_log").
+		Append(".root"));
+  // NOTE: problems with C file...
+  canvas->Print(TString(treename).
+		ReplaceAll("energy_tree","canvas_gaussfit_log").
+		Append(".C"));
+  canvas->Print(TString(treename).
+		ReplaceAll("energy_tree","canvas_gaussfit_log").
+		Append(".pdf"));
+  canvas->Print(TString(treename).
+		ReplaceAll("energy_tree","canvas_gaussfit_log").
+		Append(".png"));
+
 
   return;
 
