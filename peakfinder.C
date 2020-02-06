@@ -128,9 +128,18 @@ void peakfinder(const char* filename,
   }
 
   // Now we build the fit function
-  double fit_range_max = 400;
-  if (strcmp(treename,"energy_tree_EJ_200")==0)
+  double fit_range_max = 375;
+  if (strcmp(treename,"energy_tree_EJ_200")   ==0 ||
+      strcmp(treename,"energy_tree_EJ_260")   ==0 ||
+      strcmp(treename,"energy_tree_EJ_260_2P")==0 ||
+      strcmp(treename,"energy_tree_SCSN_81S") ==0   )
     fit_range_max=500;
+
+  if (strcmp(treename,"energy_tree_SCSN_81F3")==0)
+    fit_range_max=400;
+  if (strcmp(treename,"energy_tree_SCSN_81F4")==0)
+    fit_range_max=395;
+
   TF1 *func = new TF1("func",fpeaks,-40,fit_range_max,3*NPEAKS);
 
   // We may have more than the default 25 parameters
@@ -178,6 +187,7 @@ void peakfinder(const char* filename,
   // the fit by hand for those tiles we know need a small push
   if (strcmp(treename,"energy_tree_EJ_200")==0||
       strcmp(treename,"energy_tree_SCSN_81F1")==0||
+      strcmp(treename,"energy_tree_SCSN_81F2")==0||
       strcmp(treename,"energy_tree_SCSN_81F3")==0)
     fit = hist->Fit("func","RS");
 
