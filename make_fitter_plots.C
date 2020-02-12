@@ -13,6 +13,7 @@
 #include "SiPMCalib/SiPMCalc/interface/SiPMPdf.hpp"
 #include <cstdlib>
 #include <cstring>
+#include <stdio.h>
 
 R__LOAD_LIBRARY(libSiPMCalibSiPMCalc)
 R__LOAD_LIBRARY(libSiPMCalibInvSqCalc)
@@ -33,6 +34,9 @@ modify the axis titles and offset, just seems not to like the range change
 
  */////////////////////////////////////////////////////////////////////////////
 
+// Helper function used to print the fit results
+// for the DN-18-007 note and the HCAL DPG presentation
+int idx(const char* treename);
 
 void make_fitter_plots(const char* filename, bool logy = false) {
 
@@ -107,7 +111,76 @@ void make_fitter_plots(const char* filename, bool logy = false) {
 	    << " +/- " << lambda->getError()
 	    << "\n\n";
 
+  // Save formatted outputs to a file
+  FILE *output;
+  output = fopen("text_results.txt","a");
+
+  // Formatted output for presentation
+  int row=idx(filename);
+  fprintf(output,"PRESENTATION table.cell(%d,1).text = \"%.3f+-%.3f\"\n",row,
+	 mean->getValV(),mean->getError());
+  fprintf(output,"PRESENTATION table.cell(%d,2).text = \"%.3f+-%.3f\"\n",row,
+	 lambda->getValV(),lambda->getError());
+  fprintf(output,"PRESENTATION table.cell(%d,3).text = \"%.3f\"\n",row,
+	 mean->getValV()/(1-lambda->getValV()));
+
+  // Formatted output for DN-18-007
+  fprintf(output,
+	  "DN-18-007_NOTE %d & %.3f\\pm%.3f & %.3f\\pm%.3f & %.3f\\pm%.3f\n",
+	 row,
+	 mean->getValV(),mean->getError(),
+	 lambda->getValV(),lambda->getError(),
+	 mean->getValV()/(1-lambda->getValV()),
+	 mean->getValV()/(1-lambda->getValV())*
+	 sqrt((mean->getError()/mean->getValV())*
+	      (mean->getError()/mean->getValV())+
+	      (lambda->getError()/(1-lambda->getValV())*
+	       lambda->getError()/(1-lambda->getValV()))));
+
+  fclose(output);
 
   return;
+
+}
+
+void make_all_fitter_plots() {
+
+  const char* filenames[8] =
+    {"results/roofit_energy_tree_EJ_200_0_1_1.root",
+     "results/roofit_energy_tree_EJ_260_0_1_1.root",
+     "results/roofit_energy_tree_EJ_260_2P_0_1_1.root",
+     "results/roofit_energy_tree_SCSN_81F1_0_1_1.root",
+     "results/roofit_energy_tree_SCSN_81F2_0_1_1.root",
+     "results/roofit_energy_tree_SCSN_81F3_0_1_1.root",
+     "results/roofit_energy_tree_SCSN_81F4_0_1_1.root",
+     "results/roofit_energy_tree_SCSN_81S_0_1_1.root"};
+
+  for (int i=0;i<8;make_fitter_plots(filenames[i++]));
+
+  return;
+
+}
+
+int idx(const char* filename) {
+
+  const char* tilenames[8] =
+    {"EJ_200",
+     "EJ_260",
+     "EJ_260_2P",
+     "SCSN_81F1",
+     "SCSN_81F2",
+     "SCSN_81F3",
+     "SCSN_81F4",
+     "SCSN_81S"};
+
+  int i = 0;
+  for (i=0;i<8;++i)
+    if (strstr(filename,tilenames[i])!=0) break;
+
+  // Argh, EJ_260 matches also the EJ_260_2P file, let us fix this
+  // by returning immediately the row corresponding to EJ_260_2P
+  if (strstr(filename,"EJ_260_2P")!=0) return 3;
+
+  return i+1;
 
 }

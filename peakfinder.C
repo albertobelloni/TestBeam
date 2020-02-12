@@ -50,6 +50,7 @@ The fit function is a plain sum of Gaussians, the parameters are:
 #include "TFile.h"
 #include "TMath.h"
 #include "string.h"
+#include <stdio.h>
 
 #define DEBUG false
 
@@ -68,6 +69,11 @@ Double_t fpeaks(Double_t *x, Double_t *par) {
   return result;
 }
 
+// Helper function used to print the fit results
+// for the DN-18-007 note and the HCAL DPG presentation
+int idx(const char* treename);
+
+// The main function: this is the one you call!
 void peakfinder(const char* filename,
 		const char* treename) {
 
@@ -303,17 +309,36 @@ void peakfinder(const char* filename,
   // and accept an up to 3% mistake in the yield estimate
   gain_estimate = 41.;
 	
-  printf("\n\nTile: %s\n",treename);
-  printf("Average number of p.e. from fit: %.3f\n",
-	 pe_numerator/pe_denominator);
-
+  // It looks like we will need the following numbers a few times
+  // Let us calculate them once and for all
+  float avg_pe_fit = pe_denominator>0?pe_numerator/pe_denominator:-99;
   // Some machinery to calculate mean: want to use only the range with
   // at least 1 p.e.
   hist->GetXaxis()->SetRangeUser(25,600);
-  printf("Average number of p.e. from TH1::Mean: %.3f\n",
-	 hist->GetMean()/gain_estimate);
-  printf("Estimated gain: %.3f\n\n",gain_estimate);
+  float avg_pe_integ = gain_estimate>0?hist->GetMean()/gain_estimate:-99;
   hist->GetXaxis()->SetRangeUser(-50,550);
+
+  printf("\n\nTile: %s\n",treename);
+  printf("Average number of p.e. from fit: %.3f\n",avg_pe_fit);
+  printf("Average number of p.e. from TH1::Mean: %.3f\n",avg_pe_integ);
+  printf("Estimated gain: %.3f\n\n",gain_estimate);
+
+  // Save formatted outputs to a file
+  FILE *output;
+  output = fopen("text_results.txt","a");
+
+  // Formatted output for presentation
+  int row=idx(treename);
+  fprintf(output,"PRESENTATION table.cell(%d,4).text = \"%.3f\"\n",
+	  row,avg_pe_fit);
+  fprintf(output,"PRESENTATION table.cell(%d,5).text = \"%.3f\"\n",
+	  row,avg_pe_integ);
+
+  // Formatted output for DN-18-007
+  fprintf(output,
+	  "DN-18-007_NOTE %d & %.3f & %.3f\n",row,avg_pe_fit,avg_pe_integ);
+
+  fclose(output);
 
   // Minimal beautification of the histogram
   hist->GetXaxis()->SetTitle("Charge [fC]");
@@ -324,19 +349,15 @@ void peakfinder(const char* filename,
   hist->SetLineWidth(3);
   hist->Draw("hist,same");
 
-  hist->GetXaxis()->SetRangeUser(25,600);
   TLatex label;
   label.SetNDC();
   label.SetTextSize(0.05);
   label.SetTextAlign(31); // right-aligned; center-aligned
-  label.DrawLatex(0.91,0.875,Form("<p.e.> hist: %.3f",
-				  hist->GetMean()/gain_estimate));
-  label.DrawLatex(0.91,0.825,Form("<p.e.> fit: %.3f",
-				  pe_numerator/pe_denominator));
+  label.DrawLatex(0.91,0.875,Form("<p.e.> hist: %.3f",avg_pe_integ));
+  label.DrawLatex(0.91,0.825,Form("<p.e.> fit: %.3f",avg_pe_fit));
   label.DrawLatex(0.91,0.775,TString(treename).
 		  ReplaceAll("energy_tree_","").
 		  ReplaceAll("_","-"));
-  hist->GetXaxis()->SetRangeUser(-50,550);
 
   canvas->Print(TString(treename).
 		ReplaceAll("energy_tree","canvas_gaussfit_lin").
@@ -375,6 +396,7 @@ void peakfinder(const char* filename,
 }
 
 
+// When you need to run all fits one after the other...
 void run_peakfinder(const char* filename) {
 
   const char* treenames[8] =
@@ -390,5 +412,25 @@ void run_peakfinder(const char* filename) {
   for (int i=0;i<8;peakfinder(filename,treenames[i++]));
 
   return;
+
+}
+
+int idx(const char* treename) {
+
+  const char* treenames[8] =
+    {"energy_tree_EJ_200",
+     "energy_tree_EJ_260",
+     "energy_tree_EJ_260_2P",
+     "energy_tree_SCSN_81F1",
+     "energy_tree_SCSN_81F2",
+     "energy_tree_SCSN_81F3",
+     "energy_tree_SCSN_81F4",
+     "energy_tree_SCSN_81S"};
+
+  int i = 0;
+  for (i=0;i<8;++i)
+    if (strcmp(treename,treenames[i])==0) break;
+
+  return i+1;
 
 }
