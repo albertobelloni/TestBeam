@@ -121,21 +121,26 @@ void make_fitter_plots(const char* filename, bool logy = false) {
 	 mean->getValV(),mean->getError());
   fprintf(output,"PRESENTATION table.cell(%d,2).text = \"%.3f+-%.3f\"\n",row,
 	 lambda->getValV(),lambda->getError());
-  fprintf(output,"PRESENTATION table.cell(%d,3).text = \"%.3f\"\n",row,
-	 mean->getValV()/(1-lambda->getValV()));
+  fprintf(output,"PRESENTATION table.cell(%d,3).text = \"%.3f+-%.3f\"\n",row,
+	  mean->getValV()/(1-lambda->getValV()),
+	  mean->getValV()/(1-lambda->getValV())*
+	  sqrt((mean->getError()/mean->getValV())*
+	       (mean->getError()/mean->getValV())+
+	       (lambda->getError()/(1-lambda->getValV())*
+		lambda->getError()/(1-lambda->getValV()))));
 
   // Formatted output for DN-18-007
   fprintf(output,
 	  "DN-18-007_NOTE %d & %.3f\\pm%.3f & %.3f\\pm%.3f & %.3f\\pm%.3f\n",
-	 row,
-	 mean->getValV(),mean->getError(),
-	 lambda->getValV(),lambda->getError(),
-	 mean->getValV()/(1-lambda->getValV()),
-	 mean->getValV()/(1-lambda->getValV())*
-	 sqrt((mean->getError()/mean->getValV())*
-	      (mean->getError()/mean->getValV())+
-	      (lambda->getError()/(1-lambda->getValV())*
-	       lambda->getError()/(1-lambda->getValV()))));
+	  row,
+	  mean->getValV(),mean->getError(),
+	  lambda->getValV(),lambda->getError(),
+	  mean->getValV()/(1-lambda->getValV()),
+	  mean->getValV()/(1-lambda->getValV())*
+	  sqrt((mean->getError()/mean->getValV())*
+	       (mean->getError()/mean->getValV())+
+	       (lambda->getError()/(1-lambda->getValV())*
+		lambda->getError()/(1-lambda->getValV()))));
 
   fclose(output);
 
