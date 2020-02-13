@@ -1,5 +1,30 @@
 #include "sliman2017.h"
 
+/*//////////////////////////////////////////////////////////////////////////////
+Things to remember:
+
+- for the sake of simplicity, set the directory with the slimmed ntuples
+  in the slimana2017.h file (look at lines 30-38
+
+- remember to create the directories where ROOT will save the plots. Here is
+  a quick command (look at Makefile for clarifications):
+
+  %> make slimprep
+
+- usual operative mode:
+
+  [] .L sliman2017.C++
+  [] doAlign()
+  [] doMaps()
+  [] doTimeSlice()
+  [] doEnergy()
+
+- when done (and after having copied the relevant plots somewhere safe):
+
+  %> make plotclean
+
+ *//////////////////////////////////////////////////////////////////////////////
+
 ////////////////////////////////////////////////////////////////////////////////
 // Alignment plots
 ////////////////////////////////////////////////////////////////////////////////
@@ -35,7 +60,8 @@ void doAlignmentPlots(bool debug, const char* dir) {
   for (int i = 0; i < NPLANES; ++i) {
     hist[i] = new TH1F(var[i].c_str(),"",240,-30,30);
     chain->Project(var[i].c_str(),var[i].c_str(),
-                   Form("abs(%s)<30",var[i].c_str()));
+                   Form("abs(%s)<30",var[i].c_str()),
+		   "",debug?1000:TTree::kMaxEntries);
     mean[i] = hist[i]->Fit("gaus","SQN")->GetParams()[1];
     // really not best way: why re-doing fit? I just need to
     // check if resolution of wire chambers are similar or not
@@ -69,7 +95,7 @@ void doAlignmentPlots(bool debug, const char* dir) {
   };
 
   for (int i = 0; i < NPLANES; ++i) {
-    canv[i] = new TCanvas(Form("align_%d",i),"",500,500); // makes the new TCanvases                                                            
+    canv[i] = new TCanvas(Form("align_%d",i),"",500,500);
     leg[i] = new TLegend(0.7,0.7,0.9,0.9,"","brNDC");
     leg[i]->SetTextSize(0.05);
     leg[i]->AddEntry(hist[i],entry[i].c_str(),"l");
@@ -215,12 +241,18 @@ void doMaps(int flag, bool debug, const char* dir) {
 				"",350, -60, 40);
     hist_denX_rot[i] = new TH1F(Form("%s_denX_rot",channels[i].name.c_str()),
 				"",350, -60, 40);
-    hist_effX_rot_cut[i] = new TH1F(Form("%s_effX_rot_cut",channels[i].name.c_str()),
+    hist_effX_rot_cut[i] = new TH1F(Form("%s_effX_rot_cut",
+					 channels[i].name.c_str()),
 				    "",350, -60, 40);
-    hist_denX_rot_cut[i] = new TH1F(Form("%s_denX_rot_cut",channels[i].name.c_str()),
+    hist_denX_rot_cut[i] = new TH1F(Form("%s_denX_rot_cut",
+					 channels[i].name.c_str()),
 				    "",350, -60, 40);
-    hist_effX_rot_cut_nbins[i] = new TH1F(Form("%s_effX_rot_cut_nbins",channels[i].name.c_str()), "", bins, -60, 60);
-    hist_denX_rot_cut_nbins[i] = new TH1F(Form("%s_denX_rot_cut_nbins",channels[i].name.c_str()), "", bins, -60, 60);
+    hist_effX_rot_cut_nbins[i] = 
+      new TH1F(Form("%s_effX_rot_cut_nbins",channels[i].name.c_str()),
+	       "", bins, -60, 60);
+    hist_denX_rot_cut_nbins[i] = 
+      new TH1F(Form("%s_denX_rot_cut_nbins",channels[i].name.c_str()),
+	       "", bins, -60, 60);
 
     hist_effX_rot[i]->Sumw2();
     hist_denX_rot[i]->Sumw2();
@@ -234,12 +266,18 @@ void doMaps(int flag, bool debug, const char* dir) {
 				"",400,-60,50);
     hist_denY_rot[i] = new TH1F(Form("%s_denY_rot",channels[i].name.c_str()),
 				"",400,-60,50);
-    hist_effY_rot_cut[i] = new TH1F(Form("%s_effY_rot_cut",channels[i].name.c_str()),
-				    "",400,-60,50);
-    hist_denY_rot_cut[i] = new TH1F(Form("%s_denY_rot_cut",channels[i].name.c_str()),
-				    "",400,-60,50);
-    hist_effY_rot_cut_nbins[i] = new TH1F(Form("%s_effY_rot_cut_nbins",channels[i].name.c_str()),"", bins,-70, 50);
-    hist_denY_rot_cut_nbins[i] = new TH1F(Form("%s_denY_rot_cut_nbins",channels[i].name.c_str()),"", bins,-70, 50);
+    hist_effY_rot_cut[i] =
+      new TH1F(Form("%s_effY_rot_cut",channels[i].name.c_str()),
+	       "",400,-60,50);
+    hist_denY_rot_cut[i] =
+      new TH1F(Form("%s_denY_rot_cut",channels[i].name.c_str()),
+	       "",400,-60,50);
+    hist_effY_rot_cut_nbins[i] =
+      new TH1F(Form("%s_effY_rot_cut_nbins",channels[i].name.c_str()),
+	       "", bins,-70, 50);
+    hist_denY_rot_cut_nbins[i] =
+      new TH1F(Form("%s_denY_rot_cut_nbins",channels[i].name.c_str()),
+	       "", bins,-70, 50);
     
     hist_effY_rot[i]->Sumw2();
     hist_denY_rot[i]->Sumw2();
@@ -261,10 +299,12 @@ void doMaps(int flag, bool debug, const char* dir) {
     
 
     // Pedestal Plots
-    hist_pedX_rot_cut[i] = new TH1F(Form("%s_pedX_rot_cut",channels[i].name.c_str()),
-				    "", 350, -60, 40);
-    hist_pedY_rot_cut[i] = new TH1F(Form("%s_ped_rot",channels[i].name.c_str()),
-				    "", bins, -60, 50);
+    hist_pedX_rot_cut[i] =
+      new TH1F(Form("%s_pedX_rot_cut",channels[i].name.c_str()),
+	       "", 350, -60, 40);
+    hist_pedY_rot_cut[i] =
+      new TH1F(Form("%s_ped_rot",channels[i].name.c_str()),
+	       "", bins, -60, 50);
     hist_pedX_rot_cut[i]->Sumw2();
     hist_pedY_rot_cut[i]->Sumw2();
   }
@@ -331,7 +371,8 @@ void doMaps(int flag, bool debug, const char* dir) {
       double x_hit_rot = rotate_Point(x_hit, y_hit, i, 'X');
       double y_hit_rot = rotate_Point(x_hit, y_hit, i, 'Y');
       
-      if ( isFiducial( i, x_hit, y_hit) ^ isRotFiducial( i, x_hit_rot, y_hit_rot)) {
+      if ( isFiducial( i, x_hit, y_hit) ^ 
+	   isRotFiducial( i, x_hit_rot, y_hit_rot)) {
 	cout << "ISSUE WITH" << "\n" 
 	     << "i = " << i << "\n"
 	     << "tile = " << channels[i].name << "\n"
@@ -401,7 +442,8 @@ void doMaps(int flag, bool debug, const char* dir) {
 	if ( left_or_right( x_hit_rot, y_hit_rot, i))
 	  hist_pedY_rot_cut[i]->Fill(y_hit_rot);
 
-	if (isOtherFiducial( i, x_hit_rot, y_hit_rot, anti_fiducialX, anti_fiducialY) && noisetest)
+	if (isOtherFiducial( i, x_hit_rot, y_hit_rot, 
+			     anti_fiducialX, anti_fiducialY) && noisetest)
 	  hist_noiseY[i]->Fill(y_hit_rot);
       }
 
@@ -453,7 +495,8 @@ void doMaps(int flag, bool debug, const char* dir) {
   // Test Canvas for nouse
   TCanvas *canv_noiseY[NUMCHAN];
   // For cutting crud
-  TCanvas *canvX_cut[NUMCHAN], *canvY_cut[NUMCHAN], *canvX_rot_cut[NUMCHAN], *canvY_rot_cut[NUMCHAN];
+  TCanvas *canvX_cut[NUMCHAN], *canvY_cut[NUMCHAN],
+    *canvX_rot_cut[NUMCHAN], *canvY_rot_cut[NUMCHAN];
   // Special Binned Canvases
   TCanvas *canvX_rot_cut_nbins[NUMCHAN], *canvY_rot_cut_nbins[NUMCHAN];
   // Denominator Canvases
@@ -469,9 +512,9 @@ void doMaps(int flag, bool debug, const char* dir) {
     if (debug && i!=0 && i!=3)
       continue;
 
-    //********************************************************************************
+    //**************************************************************************
     // ******** 2D EFFICIENCY ********
-    //********************************************************************************
+    //**************************************************************************
 
     // Set up line
     TLine* fid_line = new TLine();
@@ -506,14 +549,17 @@ void doMaps(int flag, bool debug, const char* dir) {
       label.DrawLatex(0.8,0.875, entry[i].c_str());
       gPad->SetGrid();
       
-      canv[i]->Print(Form("Original_Images/Efficiency_Maps_2D/efficiency_map_%s.png",channels[i].name.c_str()));
-      canv[i]->Print(Form("Original_Images/Efficiency_Maps_2D/efficiency_map_%s.pdf",channels[i].name.c_str()));
-      canv[i]->Print(Form("Original_Images/Efficiency_Maps_2D/efficiency_map_%s.C",channels[i].name.c_str()));
+      canv[i]->Print(Form("Original_Images/Efficiency_Maps_2D/"
+			  "efficiency_map_%s.png",channels[i].name.c_str()));
+      canv[i]->Print(Form("Original_Images/Efficiency_Maps_2D/"
+			  "efficiency_map_%s.pdf",channels[i].name.c_str()));
+      canv[i]->Print(Form("Original_Images/Efficiency_Maps_2D/"
+			  "efficiency_map_%s.C",channels[i].name.c_str()));
     }
-
-    //********************************************************************************
+    
+    //**************************************************************************
     // ******* 2D ROTATED EFFICIENCY *******
-    //********************************************************************************
+    //**************************************************************************
 
     TLine* fid_line_rot = new TLine();
     fid_line_rot -> SetLineWidth(2);
@@ -524,7 +570,8 @@ void doMaps(int flag, bool debug, const char* dir) {
     hist_eff_rot[i] -> GetYaxis() -> SetTitle("y [mm]");
 
     if (eff_rot) {
-      canv_rot[i] = new TCanvas( (channels[i].name + "_rot").c_str(), "", 550, 500);
+      canv_rot[i] = new TCanvas( (channels[i].name + "_rot").c_str(),
+				 "", 550, 500);
       canv_rot[i] -> SetRightMargin(canv_rot[i] -> GetLeftMargin());
 
       hist_eff_rot[i] -> Draw("colz");
@@ -542,23 +589,33 @@ void doMaps(int flag, bool debug, const char* dir) {
       label_rot.SetTextAlign(30);
       label_rot.DrawLatex(0.8,0.875, entry[i].c_str());
 
-      canv_rot[i] -> Print(Form("Rotated_Images/Efficiency_Maps_2D/efficiency_map_rot%s.png", channels[i].name.c_str()));
-      canv_rot[i] -> Print(Form("Rotated_Images/Efficiency_Maps_2D/efficiency_map_rot%s.pdf", channels[i].name.c_str()));
-      canv_rot[i] -> Print(Form("Rotated_Images/Efficiency_Maps_2D/efficiency_map_rot%s.C", channels[i].name.c_str()));
+      canv_rot[i] -> Print(Form("Rotated_Images/Efficiency_Maps_2D/"
+				"efficiency_map_rot%s.png",
+				channels[i].name.c_str()));
+      canv_rot[i] -> Print(Form("Rotated_Images/Efficiency_Maps_2D/"
+				"efficiency_map_rot%s.pdf",
+				channels[i].name.c_str()));
+      canv_rot[i] -> Print(Form("Rotated_Images/Efficiency_Maps_2D/"
+				"efficiency_map_rot%s.C",
+				channels[i].name.c_str()));
     }
 
-    //********************************************************************************
+    //**************************************************************************
     // ******** CMB-LIKE PLOT OF 2D ROTATED EFFICIENCY ********
-    //********************************************************************************
+    //**************************************************************************
     if (cmb) {
 
       // Define Color Palette
       const Int_t num = 9;
       // These are parameters for "kBird", the palette that we use originaly
-      Double_t red[num]   = { 0.2082, 0.0592, 0.0780, 0.0232, 0.1802, 0.5301, 0.8186, 0.9956, 0.9764};
-      Double_t green[num] = { 0.1664, 0.3599, 0.5041, 0.6419, 0.7178, 0.7492, 0.7328, 0.7862, 0.9832};
-      Double_t blue[num]  = { 0.5293, 0.8684, 0.8385, 0.7914, 0.6425, 0.4662, 0.3499, 0.1968, 0.0539};
-      Double_t length[num] = { 0.00, 0.86, 0.88, 0.90, 0.92, 0.94, 0.96, 0.98, 1.0};
+      Double_t red[num]   = { 0.2082, 0.0592, 0.0780, 0.0232, 0.1802,
+			      0.5301, 0.8186, 0.9956, 0.9764};
+      Double_t green[num] = { 0.1664, 0.3599, 0.5041, 0.6419, 0.7178,
+			      0.7492, 0.7328, 0.7862, 0.9832};
+      Double_t blue[num]  = { 0.5293, 0.8684, 0.8385, 0.7914, 0.6425,
+			      0.4662, 0.3499, 0.1968, 0.0539};
+      Double_t length[num] = { 0.00, 0.86, 0.88, 0.90, 0.92,
+			       0.94, 0.96, 0.98, 1.0};
       Int_t nb = 255;
       TColor::CreateGradientColorTable( num, length, red, green, blue, nb);
 
@@ -570,10 +627,12 @@ void doMaps(int flag, bool debug, const char* dir) {
       for (int xbin=0;xbin<=hist_eff_cmb[i]->GetNbinsX();xbin++)
 	for (int ybin=0;ybin<=hist_eff_cmb[i]->GetNbinsY();ybin++) {
 	  float x = ((TAxis*)hist_eff_cmb[i]->GetXaxis())->GetBinCenter(xbin);
-	  float y = ((TAxis*)hist_eff_cmb[i]->GetYaxis())->GetBinCenter(ybin);	  
+	  float y = ((TAxis*)hist_eff_cmb[i]->GetYaxis())->GetBinCenter(ybin);
 	  if (isRotFiducial(i,x,y)) {
-	    hist_eff_cmb[i]->SetBinContent(xbin,ybin,hist_eff_rot[i]->GetBinContent(xbin,ybin));
-	    hist_eff_cmb[i]->SetBinError  (xbin,ybin,hist_eff_rot[i]->GetBinError  (xbin,ybin));
+	    hist_eff_cmb[i]->SetBinContent(xbin,ybin,hist_eff_rot[i]->
+					   GetBinContent(xbin,ybin));
+	    hist_eff_cmb[i]->SetBinError  (xbin,ybin,hist_eff_rot[i]->
+					   GetBinError  (xbin,ybin));
 	  }
 	  else {
 	    hist_eff_cmb[i]->SetBinContent(xbin,ybin,0);
@@ -596,14 +655,20 @@ void doMaps(int flag, bool debug, const char* dir) {
       label_cmb.SetTextAlign(30);
       label_cmb.DrawLatex(0.8,0.875, entry[i].c_str());
 
-      canv_cmb[i]->Print(Form("Rotated_Images/Efficiency_Maps_2D/CMB_Plots/efficiency_map_rotcmb%s.png",channels[i].name.c_str()));
-      canv_cmb[i]->Print(Form("Rotated_Images/Efficiency_Maps_2D/CMB_Plots/efficiency_map_rotcmb%s.pdf",channels[i].name.c_str()));
-      canv_cmb[i]->Print(Form("Rotated_Images/Efficiency_Maps_2D/CMB_Plots/efficiency_map_rotcmb%s.C",channels[i].name.c_str()));
+      canv_cmb[i]->Print(Form("Rotated_Images/Efficiency_Maps_2D/CMB_Plots/"
+			      "efficiency_map_rotcmb%s.png",
+			      channels[i].name.c_str()));
+      canv_cmb[i]->Print(Form("Rotated_Images/Efficiency_Maps_2D/CMB_Plots/"
+			      "efficiency_map_rotcmb%s.pdf",
+			      channels[i].name.c_str()));
+      canv_cmb[i]->Print(Form("Rotated_Images/Efficiency_Maps_2D/CMB_Plots/"
+			      "efficiency_map_rotcmb%s.C",
+			      channels[i].name.c_str()));
     }
 
-    //********************************************************************************
+    //**************************************************************************
     // ******* X EFFICIENCY *******
-    //********************************************************************************
+    //**************************************************************************
     hist_effX[i]->Divide(hist_effX[i],hist_denX[i],1,1,"b");
     hist_effX[i]->GetXaxis()->SetTitle("x [mm]");
     hist_effX[i]->GetYaxis()->SetTitle("Efficiency");
@@ -620,14 +685,17 @@ void doMaps(int flag, bool debug, const char* dir) {
       labelX.SetTextAlign(30);
       labelX.DrawLatex(0.92,0.875, entry[i].c_str());
       
-      canvX[i]->Print(Form("Original_Images/Efficiency_Maps_X/efficiency_X_%s.png", channels[i].name.c_str()));
-      canvX[i]->Print(Form("Original_Images/Efficiency_Maps_X/efficiency_X_%s.pdf", channels[i].name.c_str()));
-      canvX[i]->Print(Form("Original_Images/Efficiency_Maps_X/efficiency_X_%s.C", channels[i].name.c_str()));
+      canvX[i]->Print(Form("Original_Images/Efficiency_Maps_X/"
+			   "efficiency_X_%s.png", channels[i].name.c_str()));
+      canvX[i]->Print(Form("Original_Images/Efficiency_Maps_X/"
+			   "efficiency_X_%s.pdf", channels[i].name.c_str()));
+      canvX[i]->Print(Form("Original_Images/Efficiency_Maps_X/"
+			   "efficiency_X_%s.C", channels[i].name.c_str()));
     }
 
-    //********************************************************************************
+    //**************************************************************************
     // ******** X EFFICIENCY CUT ********
-    //********************************************************************************
+    //**************************************************************************
     hist_effX_cut[i]->Divide(hist_effX_cut[i],hist_denX_cut[i],1,1,"b");
     hist_effX_cut[i]->GetXaxis()->SetTitle("x [mm]");
     hist_effX_cut[i]->GetYaxis()->SetTitle("Efficiency");
@@ -644,21 +712,29 @@ void doMaps(int flag, bool debug, const char* dir) {
       labelX.SetTextAlign(30);
       labelX.DrawLatex(0.92,0.875,(entry[i] + " Cut").c_str() );
       
-      canvX_cut[i]->Print(Form("Original_Images/Efficiency_Maps_X/No_Crud/efficiency_X_cut_%s.png", channels[i].name.c_str()));
-      canvX_cut[i]->Print(Form("Original_Images/Efficiency_Maps_X/No_Crud/efficiency_X_cut_%s.pdf", channels[i].name.c_str()));
-      canvX_cut[i]->Print(Form("Original_Images/Efficiency_Maps_X/No_Crud/efficiency_X_cut_%s.C", channels[i].name.c_str()));
+      canvX_cut[i]->Print(Form("Original_Images/Efficiency_Maps_X/No_Crud/"
+			       "efficiency_X_cut_%s.png",
+			       channels[i].name.c_str()));
+      canvX_cut[i]->Print(Form("Original_Images/Efficiency_Maps_X/No_Crud/"
+			       "efficiency_X_cut_%s.pdf",
+			       channels[i].name.c_str()));
+      canvX_cut[i]->Print(Form("Original_Images/Efficiency_Maps_X/No_Crud/"
+			       "efficiency_X_cut_%s.C",
+			       channels[i].name.c_str()));
     }
     
-    //********************************************************************************
+    //**************************************************************************
     // ******* X EFFICIENCY ROTATED ********
-    //********************************************************************************
+    //**************************************************************************
     hist_effX_rot[i]->Divide(hist_effX_rot[i], hist_denX_rot[i], 1, 1, "b");
     hist_effX_rot[i]->GetXaxis()->SetTitle("x [mm]");
     hist_effX_rot[i]->GetYaxis()->SetTitle("Efficiency");
     hist_effX_rot[i]->SetMarkerStyle(7);
     
     if ( effX_rot) {
-      canvX_rot[i] = new TCanvas(Form("effX_rot_%s", (channels[i].name + "_rot").c_str()), "", 500, 500);
+      canvX_rot[i] =
+	new TCanvas(Form("effX_rot_%s",(channels[i].name + "_rot").c_str()),
+		    "", 500, 500);
       hist_effX_rot[i]->Draw();
       
       TLatex labelX_rot;
@@ -667,21 +743,30 @@ void doMaps(int flag, bool debug, const char* dir) {
       labelX_rot.SetTextAlign(30);
       labelX_rot.DrawLatex(0.92, 0.875, (entry[i] + " Rot").c_str());
       
-      canvX_rot[i]->Print(Form("Rotated_Images/Efficiency_Maps_X/efficiency_X_rot%s.png", channels[i].name.c_str()));
-      canvX_rot[i]->Print(Form("Rotated_Images/Efficiency_Maps_X/efficiency_X_rot%s.pdf", channels[i].name.c_str()));
-      canvX_rot[i]->Print(Form("Rotated_Images/Efficiency_Maps_X/efficiency_X_rot%s.C", channels[i].name.c_str()));      
+      canvX_rot[i]->Print(Form("Rotated_Images/Efficiency_Maps_X/"
+			       "efficiency_X_rot%s.png",
+			       channels[i].name.c_str()));
+      canvX_rot[i]->Print(Form("Rotated_Images/Efficiency_Maps_X/"
+			       "efficiency_X_rot%s.pdf",
+			       channels[i].name.c_str()));
+      canvX_rot[i]->Print(Form("Rotated_Images/Efficiency_Maps_X/"
+			       "efficiency_X_rot%s.C",
+			       channels[i].name.c_str()));      
     }
 
-    //********************************************************************************
+    //**************************************************************************
     // ******* X EFFICIENCY CUT ROTATED ********
-    //********************************************************************************
-    hist_effX_rot_cut[i]->Divide(hist_effX_rot_cut[i], hist_denX_rot_cut[i], 1, 1, "b");
+    //**************************************************************************
+    hist_effX_rot_cut[i]->Divide(hist_effX_rot_cut[i], 
+				 hist_denX_rot_cut[i], 1, 1, "b");
     hist_effX_rot_cut[i]->GetXaxis()->SetTitle("x [mm]");
     hist_effX_rot_cut[i]->GetYaxis()->SetTitle("Efficiency");
     hist_effX_rot_cut[i]->SetMarkerStyle(7);
 
     if ( effX_rot_cut) {
-      canvX_rot_cut[i] = new TCanvas(Form("effX_rot_cut_%s", (channels[i].name + "_rot").c_str()), "", 500, 500);
+      canvX_rot_cut[i] =
+	new TCanvas(Form("effX_cut_%s", (channels[i].name + "_rot").c_str()),
+		    "", 500, 500);
       
       hist_effX_rot_cut[i]->Draw();
       
@@ -691,15 +776,22 @@ void doMaps(int flag, bool debug, const char* dir) {
       labelX_rot_cut.SetTextAlign(21);
       labelX_rot_cut.DrawLatex(0.92, 0.875, (entry[i] + " Cut & Rot").c_str());
       
-      canvX_rot_cut[i]->Print(Form("Rotated_Images/Efficiency_Maps_X/No_Crud/efficiency_X_rot_cut_%s.png", channels[i].name.c_str()));
-      canvX_rot_cut[i]->Print(Form("Rotated_Images/Efficiency_Maps_X/No_Crud/efficiency_X_rot_cut_%s.pdf", channels[i].name.c_str()));
-      canvX_rot_cut[i]->Print(Form("Rotated_Images/Efficiency_Maps_X/No_Crud/efficiency_X_rot_cut_x%s.C", channels[i].name.c_str()));
+      canvX_rot_cut[i]->Print(Form("Rotated_Images/Efficiency_Maps_X/No_Crud/"
+				   "efficiency_X_rot_cut_%s.png",
+				   channels[i].name.c_str()));
+      canvX_rot_cut[i]->Print(Form("Rotated_Images/Efficiency_Maps_X/No_Crud/"
+				   "efficiency_X_rot_cut_%s.pdf",
+				   channels[i].name.c_str()));
+      canvX_rot_cut[i]->Print(Form("Rotated_Images/Efficiency_Maps_X/No_Crud/"
+				   "efficiency_X_rot_cut_x%s.C",
+				   channels[i].name.c_str()));
     }
     
-    //********************************************************************************
+    //**************************************************************************
     // ******* X EFFICIENCY CUT ROTATED SPECIAL BINS  ********
-    //********************************************************************************
-    hist_effX_rot_cut_nbins[i]->Divide(hist_effX_rot_cut_nbins[i], hist_denX_rot_cut_nbins[i], 1, 1, "b");
+    //**************************************************************************
+    hist_effX_rot_cut_nbins[i]->Divide(hist_effX_rot_cut_nbins[i],
+				       hist_denX_rot_cut_nbins[i], 1, 1, "b");
     hist_effX_rot_cut_nbins[i]->GetXaxis()->SetTitle("x [mm]");
     hist_effX_rot_cut_nbins[i]->GetYaxis()->SetTitle("Efficiency");
     hist_effX_rot_cut_nbins[i]->SetMarkerStyle(7);
@@ -718,7 +810,8 @@ void doMaps(int flag, bool debug, const char* dir) {
 	hist_effX_rot_cut_nbins[i]->SetBinError( j, error);
       }
 
-      std::string my_name = Form("effX_rot_cut_nbins_%s", channels[i].name.c_str());
+      std::string my_name =
+	Form("effX_rot_cut_nbins_%s", channels[i].name.c_str());
       canvX_rot_cut_nbins[i] = new TCanvas( my_name.c_str(), "", 500, 500);
       // hist_effX_rot_cut_nbins[i]->Draw( "colz");
       hist_effX_rot_cut_nbins[i]->Draw( );
@@ -727,17 +820,24 @@ void doMaps(int flag, bool debug, const char* dir) {
       labelX_rot_cut_nbins.SetNDC();
       labelX_rot_cut_nbins.SetTextSize(0.04);
       labelX_rot_cut_nbins.SetTextAlign(22);
-      std::string label = "#splitline{" + entry[i] + Form(" Cut & Rot}{w/ %d bins", bins) + "}";
+      std::string label = "#splitline{" + entry[i] +
+	Form(" Cut & Rot}{w/ %d bins", bins) + "}";
       labelX_rot_cut_nbins.DrawLatex(0.5, 0.3, label.c_str());
       
-      canvX_rot_cut_nbins[i]->Print(Form("Rotated_Images/Efficiency_Maps_X/No_Crud/Special_Bins/%s.png", my_name.c_str()));
-      canvX_rot_cut_nbins[i]->Print(Form("Rotated_Images/Efficiency_Maps_X/No_Crud/Special_Bins/%s.pdf", my_name.c_str()));
-      canvX_rot_cut_nbins[i]->Print(Form("Rotated_Images/Efficiency_Maps_X/No_Crud/Special_Bins/%s.C", my_name.c_str()));
+      canvX_rot_cut_nbins[i]->Print(Form("Rotated_Images/Efficiency_Maps_X/"
+					 "No_Crud/Special_Bins/%s.png",
+					 my_name.c_str()));
+      canvX_rot_cut_nbins[i]->Print(Form("Rotated_Images/Efficiency_Maps_X/"
+					 "No_Crud/Special_Bins/%s.pdf",
+					 my_name.c_str()));
+      canvX_rot_cut_nbins[i]->Print(Form("Rotated_Images/Efficiency_Maps_X/"
+					 "No_Crud/Special_Bins/%s.C",
+					 my_name.c_str()));
     }
     
-    //********************************************************************************
+    //**************************************************************************
     // ******* Y EFFICIENCY *******
-    //********************************************************************************
+    //**************************************************************************
     hist_effY[i]->Divide(hist_effY[i],hist_denY[i],1,1,"b");
     hist_effY[i]->GetXaxis()->SetTitle("y [mm]");
     hist_effY[i]->GetYaxis()->SetTitle("Efficiency");
@@ -754,14 +854,17 @@ void doMaps(int flag, bool debug, const char* dir) {
       labelY.SetTextAlign(30);
       labelY.DrawLatex(0.92,0.875,entry[i].c_str());
       
-      canvY[i]->Print(Form("Original_Images/Efficiency_Maps_Y/efficiency_Y_%s.png", channels[i].name.c_str()));
-      canvY[i]->Print(Form("Original_Images/Efficiency_Maps_Y/efficiency_Y_%s.pdf", channels[i].name.c_str()));
-      canvY[i]->Print(Form("Original_Images/Efficiency_Maps_Y/efficiency_Y_%s.C", channels[i].name.c_str()));
+      canvY[i]->Print(Form("Original_Images/Efficiency_Maps_Y/"
+			   "efficiency_Y_%s.png", channels[i].name.c_str()));
+      canvY[i]->Print(Form("Original_Images/Efficiency_Maps_Y/"
+			   "efficiency_Y_%s.pdf", channels[i].name.c_str()));
+      canvY[i]->Print(Form("Original_Images/Efficiency_Maps_Y/"
+			   "efficiency_Y_%s.C", channels[i].name.c_str()));
     }
 
-    //********************************************************************************
+    //**************************************************************************
     // ******** Y EFFICIENCY CUT ********
-    //********************************************************************************
+    //**************************************************************************
     hist_effY_cut[i]->Divide(hist_effY_cut[i], hist_denY_cut[i], 1, 1, "b");
     hist_effY_cut[i]->GetXaxis()->SetTitle("y [mm]");
     hist_effY_cut[i]->GetYaxis()->SetTitle("Efficiency");
@@ -778,21 +881,29 @@ void doMaps(int flag, bool debug, const char* dir) {
       labelY.SetTextAlign(30);
       labelY.DrawLatex(0.92,0.875, (entry[i] + " Cut").c_str());
       
-      canvY_cut[i]->Print(Form("Original_Images/Efficiency_Maps_Y/No_Crud/efficiency_Y_cut_%s.png", channels[i].name.c_str()));
-      canvY_cut[i]->Print(Form("Original_Images/Efficiency_Maps_Y/No_Crud/efficiency_Y_cut_%s.pdf", channels[i].name.c_str()));
-      canvY_cut[i]->Print(Form("Original_Images/Efficiency_Maps_Y/No_Crud/efficiency_Y_cut_%s.C", channels[i].name.c_str()));
+      canvY_cut[i]->Print(Form("Original_Images/Efficiency_Maps_Y/No_Crud/"
+			       "efficiency_Y_cut_%s.png",
+			       channels[i].name.c_str()));
+      canvY_cut[i]->Print(Form("Original_Images/Efficiency_Maps_Y/No_Crud/"
+			       "efficiency_Y_cut_%s.pdf",
+			       channels[i].name.c_str()));
+      canvY_cut[i]->Print(Form("Original_Images/Efficiency_Maps_Y/No_Crud/"
+			       "efficiency_Y_cut_%s.C",
+			       channels[i].name.c_str()));
     }
     
-    //********************************************************************************
+    //**************************************************************************
     // ******* Y EFFICIENCY ROTATED *******
-    //********************************************************************************
+    //**************************************************************************
     hist_effY_rot[i]->Divide(hist_effY_rot[i], hist_denY_rot[i], 1, 1, "b");
     hist_effY_rot[i]->GetXaxis()->SetTitle("y [mm]");
     hist_effY_rot[i]->GetYaxis()->SetTitle("Efficiency");
     hist_effY_rot[i]->SetMarkerStyle(7);
     
     if ( effY_rot) {
-      canvY_rot[i] = new TCanvas(Form("effY_%s", (channels[i].name + "_rot").c_str()),"",500,500);
+      canvY_rot[i] =
+	new TCanvas(Form("effY_%s", (channels[i].name + "_rot").c_str()),
+		    "",500,500);
       hist_effY_rot[i]->Draw();
       
       TLatex labelY_rot;
@@ -801,15 +912,22 @@ void doMaps(int flag, bool debug, const char* dir) {
       labelY_rot.SetTextAlign(30);
       labelY_rot.DrawLatex(0.92,0.875, (entry[i] + " Rot").c_str());
       
-      canvY_rot[i]->Print(Form("Rotated_Images/Efficiency_Maps_Y/efficiency_Y_rot_%s.png", channels[i].name.c_str()));
-      canvY_rot[i]->Print(Form("Rotated_Images/Efficiency_Maps_Y/efficiency_Y_rot_%s.pdf", channels[i].name.c_str()));
-      canvY_rot[i]->Print(Form("Rotated_Images/Efficiency_Maps_Y/efficiency_Y_rot_%s.C", channels[i].name.c_str()));
+      canvY_rot[i]->Print(Form("Rotated_Images/Efficiency_Maps_Y/"
+			       "efficiency_Y_rot_%s.png",
+			       channels[i].name.c_str()));
+      canvY_rot[i]->Print(Form("Rotated_Images/Efficiency_Maps_Y/"
+			       "efficiency_Y_rot_%s.pdf",
+			       channels[i].name.c_str()));
+      canvY_rot[i]->Print(Form("Rotated_Images/Efficiency_Maps_Y/"
+			       "efficiency_Y_rot_%s.C",
+			       channels[i].name.c_str()));
     }
 
-    //********************************************************************************
+    //**************************************************************************
     // ******* Y EFFICIENCY CUT ROTATED *******
-    //********************************************************************************
-    hist_effY_rot_cut[i]->Divide(hist_effY_rot_cut[i], hist_denY_rot_cut[i], 1, 1, "b");
+    //**************************************************************************
+    hist_effY_rot_cut[i]->Divide(hist_effY_rot_cut[i], 
+				 hist_denY_rot_cut[i], 1, 1, "b");
     hist_effY_rot_cut[i]->GetXaxis()->SetTitle("y [mm]");
     hist_effY_rot_cut[i]->GetYaxis()->SetTitle("count");
     // if it's not in the fingers
@@ -818,7 +936,9 @@ void doMaps(int flag, bool debug, const char* dir) {
     hist_effY_rot_cut[i]->SetMarkerStyle(7);
     
     if ( effY_rot_cut) {
-      canvY_rot_cut[i] = new TCanvas(Form("effY_%s", (channels[i].name + "_rot").c_str()),"",500,500);
+      canvY_rot_cut[i] =
+	new TCanvas(Form("effY_cut_%s", (channels[i].name + "_rot").c_str()),
+		    "",500,500);
       hist_effY_rot_cut[i]->Draw();
       
       TLatex labelY_rot_cut;
@@ -827,15 +947,22 @@ void doMaps(int flag, bool debug, const char* dir) {
       labelY_rot_cut.SetTextAlign(21);
       labelY_rot_cut.DrawLatex(0.92,0.875, (entry[i] + " Cut & Rot").c_str());
       
-      canvY_rot_cut[i]->Print(Form("Rotated_Images/Efficiency_Maps_Y/No_Crud/efficiency_Y_rot_cut_%s.png", channels[i].name.c_str()));
-      canvY_rot_cut[i]->Print(Form("Rotated_Images/Efficiency_Maps_Y/No_Crud/efficiency_Y_rot_cut_%s.pdf", channels[i].name.c_str()));
-      canvY_rot_cut[i]->Print(Form("Rotated_Images/Efficiency_Maps_Y/No_Crud/efficiency_Y_rot_cut_%s.C", channels[i].name.c_str()));
+      canvY_rot_cut[i]->Print(Form("Rotated_Images/Efficiency_Maps_Y/No_Crud/"
+				   "efficiency_Y_rot_cut_%s.png",
+				   channels[i].name.c_str()));
+      canvY_rot_cut[i]->Print(Form("Rotated_Images/Efficiency_Maps_Y/No_Crud/"
+				   "efficiency_Y_rot_cut_%s.pdf",
+				   channels[i].name.c_str()));
+      canvY_rot_cut[i]->Print(Form("Rotated_Images/Efficiency_Maps_Y/No_Crud/"
+				   "efficiency_Y_rot_cut_%s.C",
+				   channels[i].name.c_str()));
     }
 
-    //********************************************************************************
+    //**************************************************************************
     // ******** Y EFFICIENCY CUT ROTATED SPECIAL BINS ********
-    //********************************************************************************
-    hist_effY_rot_cut_nbins[i]->Divide(hist_effY_rot_cut_nbins[i], hist_denY_rot_cut_nbins[i], 1, 1, "b");
+    //**************************************************************************
+    hist_effY_rot_cut_nbins[i]->Divide(hist_effY_rot_cut_nbins[i], 
+				       hist_denY_rot_cut_nbins[i], 1, 1, "b");
     hist_effY_rot_cut_nbins[i]->GetXaxis()->SetTitle("y [mm]");
     hist_effY_rot_cut_nbins[i]->GetYaxis()->SetTitle("Efficiency");
     hist_effY_rot_cut_nbins[i]->SetMarkerStyle(7);
@@ -854,7 +981,8 @@ void doMaps(int flag, bool debug, const char* dir) {
 	hist_effY_rot_cut_nbins[i]->SetBinError( j, error);
       }
 
-      std::string my_name = Form("effY_rot_cut_nbins_%s", channels[i].name.c_str());
+      std::string my_name = Form("effY_rot_cut_nbins_%s",
+				 channels[i].name.c_str());
       canvY_rot_cut[i] = new TCanvas( my_name.c_str(),"",500,500);
       hist_effY_rot_cut_nbins[i]->Draw( "colz");
       
@@ -862,82 +990,115 @@ void doMaps(int flag, bool debug, const char* dir) {
       labelY_rot_cut_nbins.SetNDC();
       labelY_rot_cut_nbins.SetTextSize(0.04);
       labelY_rot_cut_nbins.SetTextAlign(22);
-      std::string label = "#splitline{" + entry[i] + Form(" Cut & Rot}{w/ %d bins", bins) + "}";
+      std::string label = "#splitline{" + entry[i] +
+	Form(" Cut & Rot}{w/ %d bins", bins) + "}";
       labelY_rot_cut_nbins.DrawLatex(0.5, 0.3, label.c_str());
 
-      canvY_rot_cut[i]->Print(Form("Rotated_Images/Efficiency_Maps_Y/No_Crud/Special_Bins/%s.png", my_name.c_str()));
-      canvY_rot_cut[i]->Print(Form("Rotated_Images/Efficiency_Maps_Y/No_Crud/Special_Bins/%s.pdf", my_name.c_str()));
-      canvY_rot_cut[i]->Print(Form("Rotated_Images/Efficiency_Maps_Y/No_Crud/Special_Bins/%s.C", my_name.c_str()));
+      canvY_rot_cut[i]->Print(Form("Rotated_Images/Efficiency_Maps_Y/"
+				   "No_Crud/Special_Bins/%s.png",
+				   my_name.c_str()));
+      canvY_rot_cut[i]->Print(Form("Rotated_Images/Efficiency_Maps_Y/"
+				   "No_Crud/Special_Bins/%s.pdf",
+				   my_name.c_str()));
+      canvY_rot_cut[i]->Print(Form("Rotated_Images/Efficiency_Maps_Y/"
+				   "No_Crud/Special_Bins/%s.C",
+				   my_name.c_str()));
     }
 
-    //********************************************************************************
+    //**************************************************************************
     // ******* PRINT DENOMINATORS *******
-    //********************************************************************************
+    //**************************************************************************
     if ( denXY_rot_cut) {
-      canvdenX_rot_cut[i] = new TCanvas(Form("denX_%s", ((channels[i].name + "_rot").c_str())), "", 500, 500);
+      canvdenX_rot_cut[i] =
+	new TCanvas(Form("denX_%s", ((channels[i].name + "_rot").c_str())),
+		    "", 500, 500);
       
       hist_denX_rot_cut[i]->Draw();
       TLatex label_denomX;
       label_denomX.SetNDC();
       label_denomX.SetTextSize(0.05);
       label_denomX.SetTextAlign(30);
-      label_denomX.DrawLatex(0.92,0.875, (entry[i] + Form("X Denominator rot & cut")).c_str());
+      label_denomX.
+	DrawLatex(0.92,0.875,
+		  (entry[i] + Form("X Denominator rot & cut")).c_str());
       gPad->Modified();
-      canvdenX_rot_cut[i]->Print(Form("Denominator_Plots/denom_X_rot_cut_%s.png", channels[i].name.c_str()));
-      canvdenX_rot_cut[i]->Print(Form("Denominator_Plots/denom_X_rot_cut_%s.pdf", channels[i].name.c_str()));
+      canvdenX_rot_cut[i]->Print(Form("Denominator_Plots/"
+				      "denom_X_rot_cut_%s.png",
+				      channels[i].name.c_str()));
+      canvdenX_rot_cut[i]->Print(Form("Denominator_Plots/"
+				      "denom_X_rot_cut_%s.pdf",
+				      channels[i].name.c_str()));
       
-      canvdenY_rot_cut[i] = new TCanvas(Form("denY_%s", ((channels[i].name + "_rot").c_str())), "", 500, 500);
+      canvdenY_rot_cut[i] =
+	new TCanvas(Form("denY_%s", ((channels[i].name + "_rot").c_str())),
+		    "", 500, 500);
       hist_denY_rot_cut[i]->Draw();
       TLatex label_denomY;
       label_denomY.SetNDC();
       label_denomY.SetTextSize(0.05);
       label_denomY.SetTextAlign(30);
-      label_denomY.DrawLatex(0.92,0.875, (entry[i] + Form("Y Denominator rot & cut")).c_str());
+      label_denomY.
+	DrawLatex(0.92,0.875,
+		  (entry[i] + Form("Y Denominator rot & cut")).c_str());
       gPad->Modified();
-      canvdenY_rot_cut[i]->Print(Form("Denominator_Plots/denom_Y_rot_cut_%s.png", channels[i].name.c_str()));
-      canvdenY_rot_cut[i]->Print(Form("Denominator_Plots/denom_Y_rot_cut_%s.pdf", channels[i].name.c_str()));
+      canvdenY_rot_cut[i]->Print(Form("Denominator_Plots/"
+				      "denom_Y_rot_cut_%s.png",
+				      channels[i].name.c_str()));
+      canvdenY_rot_cut[i]->Print(Form("Denominator_Plots/"
+				      "denom_Y_rot_cut_%s.pdf",
+				      channels[i].name.c_str()));
     }
 
-    //********************************************************************************
+    //**************************************************************************
     // ******* PRINT PEDESTAL *******
-    //********************************************************************************
+    //**************************************************************************
     hist_pedX_rot_cut[i]->GetXaxis()->SetTitle("x [mm]");
     hist_pedX_rot_cut[i]->GetYaxis()->SetTitle("count");
     hist_pedY_rot_cut[i]->GetXaxis()->SetTitle("y [mm]");
     hist_pedY_rot_cut[i]->GetYaxis()->SetTitle("count"); 
     if ( pedXY_rot_cut) {
-      canvpedX_rot_cut[i] = new TCanvas(Form("pedX_%s", ((channels[i].name + "_rot").c_str())), "", 500, 500);
+      canvpedX_rot_cut[i] =
+	new TCanvas(Form("pedX_%s", ((channels[i].name + "_rot").c_str())),
+		    "", 500, 500);
       
       hist_pedX_rot_cut[i]->Draw();
       TLatex label_pedX;
       label_pedX.SetNDC();
       label_pedX.SetTextSize(0.04);
       label_pedX.SetTextAlign(22);
-      label_pedX.DrawLatex(0.5,0.3, (entry[i] + Form(" X Ped rot & cut")).c_str());
+      label_pedX.
+	DrawLatex(0.5,0.3, (entry[i] + Form(" X Ped rot & cut")).c_str());
       gPad->Modified();
-      canvpedX_rot_cut[i]->Print(Form("Pedestal_Plots/ped_X_rot_cut_%s.png", channels[i].name.c_str()));
-      canvpedX_rot_cut[i]->Print(Form("Pedestal_Plots/ped_X_rot_cut_%s.pdf", channels[i].name.c_str()));
+      canvpedX_rot_cut[i]->Print(Form("Pedestal_Plots/ped_X_rot_cut_%s.png",
+				      channels[i].name.c_str()));
+      canvpedX_rot_cut[i]->Print(Form("Pedestal_Plots/ped_X_rot_cut_%s.pdf",
+				      channels[i].name.c_str()));
       
-      canvpedY_rot_cut[i] = new TCanvas(Form("pedY_%s", ((channels[i].name + "_rot").c_str())), "", 500, 500);
+      canvpedY_rot_cut[i] =
+	new TCanvas(Form("pedY_%s", ((channels[i].name + "_rot").c_str())),
+		    "", 500, 500);
       
       hist_pedY_rot_cut[i]->Draw();
       TLatex label_pedY;
       label_pedY.SetNDC();
       label_pedY.SetTextSize(0.04);
       label_pedY.SetTextAlign(22);
-      label_pedY.DrawLatex(0.5,0.3, (entry[i] + Form(" Y Ped rot & cut")).c_str());
+      label_pedY.
+	DrawLatex(0.5,0.3, (entry[i] + Form(" Y Ped rot & cut")).c_str());
       gPad->Modified();
-      canvpedY_rot_cut[i]->Print(Form("Pedestal_Plots/ped_Y_rot_cut_%s.png", channels[i].name.c_str()));
-      canvpedY_rot_cut[i]->Print(Form("Pedestal_Plots/ped_Y_rot_cut_%s.pdf", channels[i].name.c_str()));
+      canvpedY_rot_cut[i]->Print(Form("Pedestal_Plots/ped_Y_rot_cut_%s.png",
+				      channels[i].name.c_str()));
+      canvpedY_rot_cut[i]->Print(Form("Pedestal_Plots/ped_Y_rot_cut_%s.pdf",
+				      channels[i].name.c_str()));
     }
 
   
   } // loop on channels (i)
 
   if (overlay) {
-    //********************************************************************************
+    //**************************************************************************
     // ******** OVERLAYED FINGER TILES X ********
-    //********************************************************************************
+    //**************************************************************************
     TLegend* leg_fingX = new TLegend(0.2,0.7,0.4,0.9,"","brNDC");
     canv_allfingersX = new TCanvas("Overlayed_FingersX", "", 500, 500);
     
@@ -965,19 +1126,25 @@ void doMaps(int flag, bool debug, const char* dir) {
     // Now update
     gPad->Update();
     if (center) {
-      canv_allfingersX->Print("Overlayed_Plots/Overlayed_Finger_XEff_nbins_centered.png");
-      canv_allfingersX->Print("Overlayed_Plots/Overlayed_Finger_XEff_nbins_centered.pdf");
-      canv_allfingersX->Print("Overlayed_Plots/Overlayed_Finger_XEff_nbins_centered.C");
+      canv_allfingersX->Print("Overlayed_Plots/"
+			      "Overlayed_Finger_XEff_nbins_centered.png");
+      canv_allfingersX->Print("Overlayed_Plots/"
+			      "Overlayed_Finger_XEff_nbins_centered.pdf");
+      canv_allfingersX->Print("Overlayed_Plots/"
+			      "Overlayed_Finger_XEff_nbins_centered.C");
     }
     else {
-      canv_allfingersX->Print("Overlayed_Plots/Overlayed_Finger_XEff_nbins.png");
-      canv_allfingersX->Print("Overlayed_Plots/Overlayed_Finger_XEff_nbins.pdf");
-      canv_allfingersX->Print("Overlayed_Plots/Overlayed_Finger_XEff_nbins.C");
+      canv_allfingersX->Print("Overlayed_Plots/"
+			      "Overlayed_Finger_XEff_nbins.png");
+      canv_allfingersX->Print("Overlayed_Plots/"
+			      "Overlayed_Finger_XEff_nbins.pdf");
+      canv_allfingersX->Print("Overlayed_Plots/"
+			      "Overlayed_Finger_XEff_nbins.C");
     }
 
-    //********************************************************************************
+    //**************************************************************************
     // ******** OVERLAYED FINGER TILES Y ********
-    //********************************************************************************
+    //**************************************************************************
     TLegend* leg_fingY = new TLegend(0.4,0.2,0.6,0.5,"","brNDC");
     canv_allfingersY = new TCanvas("Overlayed_Fingers", "", 500, 500);
     
@@ -1009,9 +1176,9 @@ void doMaps(int flag, bool debug, const char* dir) {
     canv_allfingersY->Print("Overlayed_Plots/Overlayed_Finger_YEff_nbins.pdf");
     canv_allfingersY->Print("Overlayed_Plots/Overlayed_Finger_YEff_nbins.C");
 
-    //********************************************************************************
+    //**************************************************************************
     // ******* OVERLAYED SIGMAS Y BINS ********
-    //********************************************************************************
+    //**************************************************************************
     TLegend *leg_sigY = new TLegend(0.4, 0.2, 0.7, 0.4,"","brNDC");
     canv_allsigsY = new TCanvas("Overlayed_SigmasY", "", 500, 500);
 
@@ -1042,9 +1209,9 @@ void doMaps(int flag, bool debug, const char* dir) {
     canv_allsigsY->Print("Overlayed_Plots/Overlayed_Sigmas_YEff_nbins.pdf");
     canv_allsigsY->Print("Overlayed_Plots/Overlayed_Sigmas_YEff_nbins.C");
     
-    //********************************************************************************
+    //**************************************************************************
     // ******* OVERLAYED SIGMAS X BINS *******
-    //********************************************************************************
+    //**************************************************************************
     TLegend *leg_sigX = new TLegend(0.4, 0.2, 0.7, 0.5,"","brNDC");
     canv_allsigsX = new TCanvas("Overlayed_SigmasX", "", 500, 500);
     
@@ -1074,9 +1241,9 @@ void doMaps(int flag, bool debug, const char* dir) {
     canv_allsigsX->Print("Overlayed_Plots/Overlayed_Sigmas_XEff_nbins.C");
   }
   
-  //********************************************************************************
+  //****************************************************************************
   // ******** NOISE TEST ********
-  //********************************************************************************
+  //****************************************************************************
   if (noisetest) {
     for (unsigned int i = 0; i < NUMCHAN; i++) {
       hist_noiseY[i]->GetXaxis()->SetTitle("y [mm]");
@@ -1093,15 +1260,17 @@ void doMaps(int flag, bool debug, const char* dir) {
 
       // Now update
       gPad->Update();
-      canv_noiseY[i]->Print(Form( "Noise_Plots/noiseY_%s.png", channels[i].name.c_str()));
-      canv_noiseY[i]->Print(Form( "Noise_Plots/noiseY_%s.pdf", channels[i].name.c_str()));
+      canv_noiseY[i]->Print(Form( "Noise_Plots/noiseY_%s.png",
+				  channels[i].name.c_str()));
+      canv_noiseY[i]->Print(Form( "Noise_Plots/noiseY_%s.pdf",
+				  channels[i].name.c_str()));
       delete canv_noiseY[i];
     }
   }
 
-  //********************************************************************************
+  //****************************************************************************
   // ******** CRUD TEST ********
-  //********************************************************************************
+  //****************************************************************************
   if (crudtest) {
     for (unsigned int i = 0; i < NUMCHAN; i++) {
       canvT_Xrot[i] = new TCanvas(Form("XTEST_%s", channels[i].name.c_str()),
@@ -1117,8 +1286,10 @@ void doMaps(int flag, bool debug, const char* dir) {
       label_testX.SetTextAlign(31);
       label_testX.DrawLatex( 0.92, 0.875, entry[i].c_str());
 
-      canvT_Xrot[i] -> Print( Form( "Crud_test/crud_Xtest%s.png", channels[i].name.c_str()));
-      canvT_Xrot[i] -> Print( Form( "Crud_test/crud_Xtest%s.pdf", channels[i].name.c_str()));
+      canvT_Xrot[i] -> Print( Form( "Crud_test/crud_Xtest%s.png",
+				    channels[i].name.c_str()));
+      canvT_Xrot[i] -> Print( Form( "Crud_test/crud_Xtest%s.pdf",
+				    channels[i].name.c_str()));
       
       canvT_Yrot[i] = new TCanvas(Form("YTEST_%s", channels[i].name.c_str()),
 				  "",500,500);
@@ -1133,12 +1304,15 @@ void doMaps(int flag, bool debug, const char* dir) {
       label_testY.SetTextAlign(31);
       label_testY.DrawLatex( 0.92, 0.875, entry[i].c_str());
       
-      canvT_Yrot[i] -> Print( Form( "Crud_test/crud_Ytest%s.png", channels[i].name.c_str()));
-      canvT_Yrot[i] -> Print( Form( "Crud_test/crud_Ytest%s.pdf", channels[i].name.c_str()));
+      canvT_Yrot[i] -> Print( Form( "Crud_test/crud_Ytest%s.png",
+				    channels[i].name.c_str()));
+      canvT_Yrot[i] -> Print( Form( "Crud_test/crud_Ytest%s.pdf",
+				    channels[i].name.c_str()));
     }
   }
   
-  // If you want to change between regular and other fiducial areas, change the variable in "slimanalysis.h"
+  // If you want to change between regular and other fiducial areas,
+  // change the variable in "slimanalysis.h"
 #if REG
   cout << "using REGULAR fiducial area" << endl;
 #else
@@ -1168,6 +1342,7 @@ void doEnergy(int flag, bool debug, const char* dir) {
   
   // Let us define the histogram and book them
   TH1F *hist_en[NUMCHAN]; // 8 is the number of tiles; channels.size() == 8
+  TH1F *hist_en_pref[NUMCHAN]; // This is special binned, before fiducial cut
   TH1F *hist_en_bins[NUMCHAN]; // This will be used for pulse shape fits
   TH1F *hist_en_ped[NUMCHAN]; // This uses a region NOT where the tile is
   TTree *energy_tree[NUMCHAN];
@@ -1182,12 +1357,19 @@ void doEnergy(int flag, bool debug, const char* dir) {
   // Some global variable, to use to fill the trees
   double energy[NUMCHAN];
 
-
   for (unsigned int i = 0; i < channels.size(); ++i) {
-    hist_en[i] = new TH1F( Form("en_%s", channels[i].name.c_str()), "", 247, edges);
-    hist_en_bins[i] = new TH1F( Form("en_bins_%s", channels[i].name.c_str()), "", enbins, -50.0, 600.0);
-    hist_en_ped[i] = new TH1F( Form("en_ped_%s", channels[i].name.c_str()), "", 37, -50,50); // binning here very fine tuned...
-    energy_tree[i] = new TTree( Form("energy_tree_%s", channels[i].name.c_str()),"");
+    hist_en[i] =
+      new TH1F( Form("en_%s", channels[i].name.c_str()), "", 247, edges);
+    hist_en_pref[i] =
+      new TH1F( Form("en_pref_%s", channels[i].name.c_str()), "", 247, edges);
+    hist_en_bins[i] =
+      new TH1F( Form("en_bins_%s", channels[i].name.c_str()),
+		"", enbins, -50.0, 600.0);
+    hist_en_ped[i] =
+      new TH1F( Form("en_ped_%s", channels[i].name.c_str()),
+		"", 37, -50,50); // binning here very fine tuned...
+    energy_tree[i] = new TTree( Form("energy_tree_%s",
+				     channels[i].name.c_str()),"");
     energy_tree[i]->Branch("x",&energy[i],"x/D");
   }
 
@@ -1250,11 +1432,15 @@ void doEnergy(int flag, bool debug, const char* dir) {
       energy_ps-=TIMESLICES.size()*ped[channels[i].chan];
 
       // Look for anti-fiduciality to fill pedestal plot
-      // not enough to say !isFiducial, want to leave some space between fiducial region
+      // not enough to say !isFiducial,
+      // want to leave some space between fiducial region
       // and anti-fiducial region
       if ( isOtherFiducial( i, x_hit, y_hit, anti_fiducialX, anti_fiducialY))
 	hist_en_ped[i]->Fill(energy_ps);
       
+      // Here we have both fiducial and non-fiducial hits
+      hist_en_pref[i]->Fill(energy_ps);
+
       // THIS IS THE MOST IMPORTANT STEP 
       if (!isFiducial( i, x_hit, y_hit))
         continue;
@@ -1271,6 +1457,7 @@ void doEnergy(int flag, bool debug, const char* dir) {
 
   // Make energy plots
   TCanvas* canv[NUMCHAN];
+  TCanvas* canv_pref[NUMCHAN];
   TCanvas* canv_bins[NUMCHAN];
   TCanvas* canv_ped[NUMCHAN];
 
@@ -1283,11 +1470,17 @@ void doEnergy(int flag, bool debug, const char* dir) {
     cout << "After fiducial cut, we use " << (int)hist_en[i]->GetEntries() 
 	 << " entries for " << entry[i].c_str() << endl;
 
+    hist_en_pref[i]->GetXaxis()->SetTitle("Charge [fC]");
+    hist_en_pref[i]->GetYaxis()->SetTitle("Events");
+    hist_en_pref[i]->SetLineWidth(2);
+    hist_en_pref[i]->SetLineColor(color[i]);
+
     hist_en_ped[i]->GetXaxis()->SetTitle("Charge [fC]");
     hist_en_ped[i]->GetYaxis()->SetTitle("Events");
     hist_en_ped[i]->SetLineWidth(2);
     hist_en_ped[i]->SetLineColor(color[i]);
-    cout << "After (anti-)fiducial cut, we use " << (int)hist_en_ped[i]->GetEntries() 
+    cout << "After (anti-)fiducial cut, we use "
+	 << (int)hist_en_ped[i]->GetEntries() 
 	 << " entries for " << entry[i].c_str() << " pedestal" << endl;
 
     hist_en_bins[i]->GetXaxis()->SetTitle("Charge [fC]");
@@ -1295,16 +1488,18 @@ void doEnergy(int flag, bool debug, const char* dir) {
     hist_en_bins[i]->SetLineWidth(2);
     hist_en_bins[i]->SetLineColor(color[i]);
     if (hist_en[i]->GetEntries()!=hist_en_bins[i]->GetEntries()) {
-      cout << "Argh, the two energy plots should have the same number of entries!" << endl
+      cout << "Argh, the two energy plots should have"
+	   << " the same number of entries!" << endl
 	   << "---------> Problem in " << entry[i].c_str() << endl;
       return;
     }
 
-    // ********************************************************************************
+    // *************************************************************************
     // ******** OPTIMIZED BINNING ENERGY HISTOGRAM *******
-    // ********************************************************************************
+    // *************************************************************************
     if (reg) {
-      canv[i] = new TCanvas(Form("en_canv_%s", channels[i].name.c_str()), "", CANVAS_SIZE_X, CANVAS_SIZE_Y);
+      canv[i] = new TCanvas(Form("en_canv_%s", channels[i].name.c_str()),
+			    "", CANVAS_SIZE_X, CANVAS_SIZE_Y);
       canv[i]->SetLogx();
       canv[i]->SetLogy();
       hist_en[i]->Draw("colz");
@@ -1318,7 +1513,8 @@ void doEnergy(int flag, bool debug, const char* dir) {
       label.SetTextAlign(11);
       
       float eff = hist_en[i]->Integral(hist_en[i]->FindBin(25),
-				       hist_en[i]->GetNbinsX()) / hist_en[i]->GetEntries();
+				       hist_en[i]->GetNbinsX()) /
+	hist_en[i]->GetEntries();
       
       //float eff_err = TMath::Sqrt(eff*(1-eff)/hist_en[i]->GetEntries());
       eff*=100;
@@ -1329,18 +1525,43 @@ void doEnergy(int flag, bool debug, const char* dir) {
 				       hist_en[i]->GetMean(),
 				       hist_en[i]->GetMeanError()));
 
-      //canv[i]->Modified();
-      canv[i]->Print(Form("Energy_Plots/energy_PS_%s.png", channels[i].name.c_str()));
-      canv[i]->Print(Form("Energy_Plots/energy_PS_%s.pdf", channels[i].name.c_str()));
-      canv[i]->Print(Form("Energy_Plots/energy_PS_%s.C", channels[i].name.c_str()));
+      canv[i]->Print(Form("Energy_Plots/energy_PS_%s.png",
+			  channels[i].name.c_str()));
+      canv[i]->Print(Form("Energy_Plots/energy_PS_%s.pdf",
+			  channels[i].name.c_str()));
+      canv[i]->Print(Form("Energy_Plots/energy_PS_%s.C",
+			  channels[i].name.c_str()));
       delete canv[i];
     }
+
+    // *************************************************************************
+    // ******** OPTIMIZED BINNING ENERGY HISTOGRAM BEFORE FIDUCIAL CUT *******
+    // *************************************************************************
+    if (reg) {
+      canv_pref[i] =
+	new TCanvas(Form("en_pref_canv_%s", channels[i].name.c_str()),
+		    "", CANVAS_SIZE_X, CANVAS_SIZE_Y);
+      canv_pref[i]->SetLogx();
+      canv_pref[i]->SetLogy();
+      hist_en_pref[i]->Draw("colz");
+      hist_en_pref[i]->Write();
+      
+      canv_pref[i]->Print(Form("Energy_Plots/energy_PS_pref_%s.png",
+			       channels[i].name.c_str()));
+      canv_pref[i]->Print(Form("Energy_Plots/energy_PS_pref_%s.pdf",
+			       channels[i].name.c_str()));
+      canv_pref[i]->Print(Form("Energy_Plots/energy_PS_pref_%s.C",
+			       channels[i].name.c_str()));
+      delete canv_pref[i];
+    }
     
-    // ********************************************************************************
+    // *************************************************************************
     // ******** STANDARD (EVEN SPACED) BINNING ENERGY HISTOGRAM *******
-    // ********************************************************************************
+    // *************************************************************************
     if (bins) {
-      canv_bins[i] = new TCanvas(Form("en_bin_canv_%s", channels[i].name.c_str()), "", CANVAS_SIZE_X, CANVAS_SIZE_X);
+      canv_bins[i] =
+	new TCanvas(Form("en_bin_canv_%s",channels[i].name.c_str()),
+		    "", CANVAS_SIZE_X, CANVAS_SIZE_X);
       canv_bins[i]->SetLogx(0);
       canv_bins[i]->SetLogy();
       hist_en_bins[i]->Draw("colz");
@@ -1354,8 +1575,10 @@ void doEnergy(int flag, bool debug, const char* dir) {
       label_bins.DrawLatex(0.92, 0.875, Form( "%s bins", entry[i].c_str()));
       label_bins.SetTextAlign(11);
       
-      float eff_bins = hist_en_bins[i]->Integral(hist_en_bins[i]->FindBin(25),
-						 hist_en_bins[i]->GetNbinsX()) / hist_en_bins[i]->GetEntries();
+      float eff_bins =
+	hist_en_bins[i]->Integral(hist_en_bins[i]->FindBin(25),
+				  hist_en_bins[i]->GetNbinsX()) /
+	hist_en_bins[i]->GetEntries();
       
       //float eff_err = TMath::Sqrt(eff*(1-eff)/hist_en[i]->GetEntries());
       eff_bins*=100;
@@ -1367,17 +1590,21 @@ void doEnergy(int flag, bool debug, const char* dir) {
 					    hist_en_bins[i]->GetMeanError()));
 
       //canv_bins[i]->Modified();
-      canv_bins[i]->Print(Form("Energy_Plots/energy_PS_bins_%s.png", channels[i].name.c_str()));
-      canv_bins[i]->Print(Form("Energy_Plots/energy_PS_bins_%s.pdf", channels[i].name.c_str()));
-      canv_bins[i]->Print(Form("Energy_Plots/energy_PS_bins_%s.C", channels[i].name.c_str()));
+      canv_bins[i]->Print(Form("Energy_Plots/energy_PS_bins_%s.png",
+			       channels[i].name.c_str()));
+      canv_bins[i]->Print(Form("Energy_Plots/energy_PS_bins_%s.pdf",
+			       channels[i].name.c_str()));
+      canv_bins[i]->Print(Form("Energy_Plots/energy_PS_bins_%s.C",
+			       channels[i].name.c_str()));
       delete canv_bins[i];
     }
 
-    // ********************************************************************************
+    // *************************************************************************
     // ******** PEDESTAL HISTOGRAM *******
-    // ********************************************************************************
+    // *************************************************************************
     if (pedestal) {
-      canv_ped[i] = new TCanvas(channels[i].name.c_str(), "", CANVAS_SIZE_X, CANVAS_SIZE_Y);
+      canv_ped[i] = new TCanvas(channels[i].name.c_str(),
+				"", CANVAS_SIZE_X, CANVAS_SIZE_Y);
       canv_ped[i]->SetLogx();
       canv_ped[i]->SetLogy();
       hist_en_ped[i]->Draw("colz");
@@ -1391,8 +1618,10 @@ void doEnergy(int flag, bool debug, const char* dir) {
       label_ped.SetTextAlign(11);
       
       // note the +1 in GetNbinsX to include overflow bin
-      float fakerate_ped = hist_en_ped[i]->Integral(hist_en_ped[i]->FindBin(25),
-						    hist_en_ped[i]->GetNbinsX()+1) / hist_en[i]->GetEntries();
+      float fakerate_ped =
+	hist_en_ped[i]->Integral(hist_en_ped[i]->FindBin(25),
+				 hist_en_ped[i]->GetNbinsX()+1) /
+	hist_en[i]->GetEntries();
       
       //float fakerate_err = TMath::Sqrt(eff*(1-eff)/hist_en[i]->GetEntries());
       fakerate_ped*=100;
@@ -1404,23 +1633,27 @@ void doEnergy(int flag, bool debug, const char* dir) {
 					   hist_en_ped[i]->GetMeanError()));
       
       //canv_ped[i]->Modified();
-      canv_ped[i]->Print(Form("Energy_Plots/energy_PS_ped_%s.png", channels[i].name.c_str()));
-      canv_ped[i]->Print(Form("Energy_Plots/energy_PS_ped_%s.pdf", channels[i].name.c_str()));
-      canv_ped[i]->Print(Form("Energy_Plots/energy_PS_ped_%s.C", channels[i].name.c_str()));
+      canv_ped[i]->Print(Form("Energy_Plots/energy_PS_ped_%s.png",
+			      channels[i].name.c_str()));
+      canv_ped[i]->Print(Form("Energy_Plots/energy_PS_ped_%s.pdf",
+			      channels[i].name.c_str()));
+      canv_ped[i]->Print(Form("Energy_Plots/energy_PS_ped_%s.C",
+			      channels[i].name.c_str()));
       delete canv_ped[i];
     } // if (ped)
 
   } // channels loop
 
-  // ********************************************************************************
+  // ***************************************************************************
   // ******** OVERLAY THE PEDESTALS *******
-  // ********************************************************************************
+  // ***************************************************************************
   if (overlay) {
 
     TLegend* leg_allped = new TLegend(0.6,0.56,0.87,0.9,"","brNDC");
     leg_allped->SetTextSize(.04);
 
-    TCanvas* canv_allped = new TCanvas("overlayed_pedestal", "", CANVAS_SIZE_X, CANVAS_SIZE_Y);
+    TCanvas* canv_allped =
+      new TCanvas("overlayed_pedestal", "", CANVAS_SIZE_X, CANVAS_SIZE_Y);
     canv_allped->SetLogx();
     
     float max_value = -99;
@@ -1466,8 +1699,10 @@ void doTimeSlice(bool debug, const char* dir) {
   }
 
   for (unsigned int i = 0; i < channels.size(); ++i) {
-    hist_ts[i] = new TH1F( Form("ts_%s", channels[i].name.c_str()), "", 10, 0.5, 10.5);
-    hist_tsF[i] = new TH1F( Form("tsF_%s", channels[i].name.c_str()), "", 10, 0.5, 10.5);
+    hist_ts[i] = new TH1F( Form("ts_%s", channels[i].name.c_str()),
+			   "", 10, 0.5, 10.5);
+    hist_tsF[i] = new TH1F( Form("tsF_%s", channels[i].name.c_str()),
+			    "", 10, 0.5, 10.5);
   }
 
   // Now we get the data
@@ -1523,8 +1758,9 @@ void doTimeSlice(bool debug, const char* dir) {
       for (auto ts : TIMESLICES)
         energy_ps+=pulse[channels[i].chan][ts];
 
-      // Here we remove the pedestal: there is a single number, corresponding to the
-      // pedestal in one time slice; hence, we multiply it by the number of time slices
+      // Here we remove the pedestal: there is a single number,
+      // corresponding to the pedestal in one time slice;
+      // hence, we multiply it by the number of time slices
       // that form our signal pulse (defined in TIMESLICES)
       energy_ps-=TIMESLICES.size()*ped[channels[i].chan];
 
@@ -1534,7 +1770,9 @@ void doTimeSlice(bool debug, const char* dir) {
 
       // The fill here puts the pulse - ped in a specific bin
       for (int t=0;t<NTS;++t) {
-	// i is index on channels: <3 and 7 are sigma tiles; 3-6 are finger tiles
+	// i is index on channels:
+	// <3 and 7 are sigma tiles;
+	// 3-6 are finger tiles
         if (i < 3 || i == 7) {
           hist_ts[i]->Fill(t+1,
                            pulse[channels[i].chan][t]-
@@ -1594,7 +1832,8 @@ void doTimeSlice(bool debug, const char* dir) {
     }
   }
 
-  TCanvas* canv_ts = new TCanvas( "canv_ts", "", CANVAS_SIZE_X, CANVAS_SIZE_Y);    
+  TCanvas* canv_ts =
+    new TCanvas( "canv_ts", "", CANVAS_SIZE_X, CANVAS_SIZE_Y);    
   leg->SetTextSize(0.05);
   hist_ts[max_index]->Draw("hist");
   for (unsigned int i=0;i<channels.size(); i++) {
@@ -1625,4 +1864,47 @@ void doTimeSlice(bool debug, const char* dir) {
   delete canv_tsF;
 
   return;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Fiduciality Test Function
+////////////////////////////////////////////////////////////////////////////////
+void fiducialityTester(const int tile=0) {
+
+  // Idea: generate 100k points in a +-100 range in X and Y,
+  // and test if isFiducial, isOtherFiducial work as expected
+
+  TH2F *isFid      = new TH2F("isFid","",200,-100,100,200,-100,100);
+  TH2F *isNotFid   = new TH2F("isNotFid","",200,-100,100,200,-100,100);
+  TH2F *isOtherFid = new TH2F("isOtherFid","",200,-100,100,200,-100,100);
+
+  TRandom3 *rndm = new TRandom3();
+
+  double x,y;
+  for (int count=0; count<1e7;count++) {
+
+    x = 200*(rndm->Rndm()-0.5);
+    y = 200*(rndm->Rndm()-0.5);
+
+    if(isFiducial(tile,x,y))  isFid->Fill(x,y);
+    if(!isFiducial(tile,x,y)) isNotFid->Fill(x,y);
+    if(isOtherFiducial(tile,x,y,anti_fiducialX,anti_fiducialY))
+       isOtherFid->Fill(x,y);
+
+  }
+
+  TCanvas *canv =
+    new TCanvas(Form("canv_fiduciality_test_%d",tile),
+		Form("Test of fiduciality cut, tile %d",tile),1800,600);
+  canv->Divide(3,1);
+  canv->cd(1);
+  isFid->Draw("box");
+  canv->cd(2);
+  isNotFid->Draw("box");
+  canv->cd(3);
+  isOtherFid->Draw("box");
+  canv->Print(Form("fiduciality_test_%d.png",tile));
+
+  return;
+
 }

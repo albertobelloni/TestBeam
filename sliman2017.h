@@ -23,9 +23,21 @@
 #include <THStack.h>
 #include <TStyle.h>
 #include <TColor.h>
+#include <TRandom3.h>
 
 // Define these for making a centered plot easier
 #define REG 1
+
+////////////////////////////////////////////////////////////////////////////////
+// Define which files to use for plots! Need to change when moving host
+////////////////////////////////////////////////////////////////////////////////
+// LXPLUS:
+const char* slim_dir = "/afs/cern.ch/work/a/abelloni/"
+  "CERN_July2017_TestBeam/SLIM_2/";
+// HEPCMS:
+//const char* slim_dir = "/data/users/abelloni/CERN_TB_Jul17/SLIM_2/";
+////////////////////////////////////////////////////////////////////////////////
+
 
 // Correction to wire-chamber positions
 const double wc_xca = -1.21427;
@@ -35,7 +47,7 @@ const int NUMCHAN = 8;
 
 const vector<int> TIMESLICES { 5, 6, 7, 8, 9};
 
-// Holds the indeces for the sigma tiles to make things easier
+// Holds the indices for the sigma tiles to make things easier
 vector<unsigned int> sigmas = {0, 1, 2, 7};
 vector<unsigned int> fingers = {3, 4, 5, 6};
 
@@ -121,8 +133,6 @@ vector<channel> channels =
   {{6,23,5,"EJ_260"},
    {9,23,6,"EJ_260_2P"},
    {12,23,7,"EJ_200"},
-   // {3,23,4,"Scint_XS"},
-   // {1,23,2,"Scint_XF"},
    {4,24,4,"SCSN_81F1"},
    {7,24,5,"SCSN_81F2"},
    {10,24,6,"SCSN_81F3"},
@@ -134,8 +144,6 @@ const string entry[NUMCHAN] = {
   "EJ-260",
   "EJ-260 2P",
   "EJ-200",
-  // "Scint-X #sigma",
-  // "Scint-X finger",
   "SCSN-81 F1",
   "SCSN-81 F2",
   "SCSN-81 F3",
@@ -147,8 +155,6 @@ const int color[NUMCHAN] = {
   kBlack,
   kGreen,
   kBlue,
-  // kBlue+1,
-  // kGreen+1,
   kRed,
   kRed+1,
   kRed+2,
@@ -160,8 +166,6 @@ const int style[NUMCHAN] = {
   kDotted,
   kSolid,
   kSolid,
-  // kSolid,
-  // kDashed,
   kDotted,
   kSolid,
   kSolid,
@@ -178,10 +182,6 @@ float thetas[NUMCHAN];
 
 // Distance from wire-chamber A to plastic tiles, in [mm]
 const double z_ex = 7300;
-
-// Change this is you move to lxplus
-//const char* slim_dir = "~/TB_Analysis_17/DATA/new_SLIM/";
-const char* slim_dir = "/data/users/abelloni/CERN_TB_Jul17/SLIM_2/";
 
 // Some more constants, possibly useful for plot beautification
 const int CANVAS_SIZE_X = 500;
@@ -251,7 +251,8 @@ bool isRotFiducial(int i, float x_hit, float y_hit) {
   return oddNodes;
 }
 
-bool isOtherFiducial(int i, float x_hit, float y_hit, float arrX[4][4], float arrY[4][4]) {
+bool isOtherFiducial(int i, float x_hit, float y_hit, 
+		     float arrX[4][4], float arrY[4][4]) {
   // Find if it is fiducial!
   int polyCorners = 4;
   int k, j=polyCorners-1 ;
@@ -271,10 +272,12 @@ bool isOtherFiducial(int i, float x_hit, float y_hit, float arrX[4][4], float ar
 
 double rotate_Point(double point_X, double point_Y, int channel_num, char xy) {
   if (toupper(xy) == 'X') {
-    return ((point_X*cos(thetas[channel_num])) + (point_Y*sin(thetas[channel_num])));
+    return ((point_X*cos(thetas[channel_num])) +
+	    (point_Y*sin(thetas[channel_num])));
   }
   else {
-    return ((-point_X*sin(thetas[channel_num])) + (point_Y*cos(thetas[channel_num])));
+    return ((-point_X*sin(thetas[channel_num])) +
+	    (point_Y*cos(thetas[channel_num])));
   }
 }
 
@@ -348,10 +351,12 @@ void fill_Rot_Array() {
     thetas[chan] = calc_theta(chan); // fill the theta array
     for (int pt = 0; pt < 4; pt++) {
       // Fill the Rotated Arrays
-      rot_fiducialX[chan][pt] = rotate_Point(fiducialX[chan][pt], fiducialY[chan][pt]
-					     , chan, 'x');
-      rot_fiducialY[chan][pt] = rotate_Point(fiducialX[chan][pt], fiducialY[chan][pt]
-					     , chan, 'y');
+      rot_fiducialX[chan][pt] = rotate_Point(fiducialX[chan][pt],
+					     fiducialY[chan][pt],
+					     chan, 'x');
+      rot_fiducialY[chan][pt] = rotate_Point(fiducialX[chan][pt],
+					     fiducialY[chan][pt],
+					     chan, 'y');
     } // points
   } // channels 
 }
@@ -390,6 +395,5 @@ const double edges[248] = {
   168000, 176000, 183000, 191000, 199000, 206000, 214000, 222000,
   230000, 237000, 245000, 253000, 261000, 268000, 276000, 284000,
   291000, 302000, 316000, 329000, 343000, 356000, 370000, 384000, 398000};
-
 
 #endif
