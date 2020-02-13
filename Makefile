@@ -62,8 +62,7 @@ FIGS =  Overlayed_Finger_YEff_nbins.png \
 	ts.png \
 	tsF.png
 
-ADDFIGS = Overlayed_Finger_XEff_nbins.png \
-	align_0.png \
+ADDFIGS = align_0.png \
 	align_1.png \
 	canvas_energy_tree_EJ_200_0_1_1_lin.png \
 	canvas_energy_tree_EJ_200_0_1_1_log.png \
