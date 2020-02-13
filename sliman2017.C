@@ -1869,25 +1869,38 @@ void doTimeSlice(bool debug, const char* dir) {
 ////////////////////////////////////////////////////////////////////////////////
 // Fiduciality Test Function
 ////////////////////////////////////////////////////////////////////////////////
-void fiducialityTester(const int tile=0) {
+void doFiducialTest(const int tile=0) {
 
-  // Idea: generate 100k points in a +-100 range in X and Y,
-  // and test if isFiducial, isOtherFiducial work as expected
-
-  TH2F *isFid      = new TH2F("isFid","",200,-100,100,200,-100,100);
-  TH2F *isNotFid   = new TH2F("isNotFid","",200,-100,100,200,-100,100);
+  // Idea: generate 1M points in a +-100 range in X and Y,
+  // and test if fiducial cut flavors work as expected
+  TH2F *isFid      = new TH2F("isFid",     "",200,-100,100,200,-100,100);
+  TH2F *isRotFid   = new TH2F("isRotFid",  "",200,-100,100,200,-100,100);
+  TH2F *isNotFid   = new TH2F("isNotFid",  "",200,-100,100,200,-100,100);
   TH2F *isOtherFid = new TH2F("isOtherFid","",200,-100,100,200,-100,100);
+
+  isFid->GetXaxis()->SetTitle(Form("Fiducial, tile %d",tile));
+  isRotFid->GetXaxis()->SetTitle(Form("Rotated fiducial, tile %d",tile));
+  isNotFid->GetXaxis()->SetTitle(Form("Not-fiducial, tile %d",tile));
+  isOtherFid->GetXaxis()->SetTitle(Form("Anti-fiducial, tile %d",tile));
 
   TRandom3 *rndm = new TRandom3();
 
+  // Let us fill the array with rotated fiducial regions only once
+  // 0 is the starting value; well, if it were really 0 we would
+  // just fill the array again
+  // Need both X and Y to be zero to trigger the ROBINSON warning
+  if (rot_fiducialX[0][0]==0)
+    fill_Rot_Array();
+
   double x,y;
-  for (int count=0; count<1e7;count++) {
+  for (int count=0; count<1e6;count++) {
 
     x = 200*(rndm->Rndm()-0.5);
     y = 200*(rndm->Rndm()-0.5);
 
-    if(isFiducial(tile,x,y))  isFid->Fill(x,y);
-    if(!isFiducial(tile,x,y)) isNotFid->Fill(x,y);
+    if(isFiducial(tile,x,y))    isFid->Fill(x,y);
+    if(!isFiducial(tile,x,y))   isNotFid->Fill(x,y);
+    if(isRotFiducial(tile,x,y)) isRotFid->Fill(x,y);
     if(isOtherFiducial(tile,x,y,anti_fiducialX,anti_fiducialY))
        isOtherFid->Fill(x,y);
 
@@ -1895,13 +1908,15 @@ void fiducialityTester(const int tile=0) {
 
   TCanvas *canv =
     new TCanvas(Form("canv_fiduciality_test_%d",tile),
-		Form("Test of fiduciality cut, tile %d",tile),1800,600);
-  canv->Divide(3,1);
+		Form("Test of fiduciality cut, tile %d",tile),800,800);
+  canv->Divide(2,2);
   canv->cd(1);
   isFid->Draw("box");
   canv->cd(2);
   isNotFid->Draw("box");
   canv->cd(3);
+  isRotFid->Draw("box");
+  canv->cd(4);
   isOtherFid->Draw("box");
   canv->Print(Form("fiduciality_test_%d.png",tile));
 
