@@ -43,7 +43,7 @@ plotclean:
 	echo "Deleted directory structure with sliman2017 plots"
 
 FIGS =  Overlayed_Finger_YEff_nbins.png \
-	Overlayed_Sigmas_XEff_nbins.png \
+	Overlayed_Finger_XEff_nbins.png \
 	Overlayed_Sigmas_YEff_nbins.png \
 	Overlayed_Sigmas_XEff_nbins.png \
 	align_2.png \
