@@ -19,7 +19,9 @@ Things to remember:
   [] doTimeSlice()
   [] doEnergy()
 
-- when done (and after having copied the relevant plots somewhere safe):
+- when done, save the plots in the dn-18-007.tar file, and cleanup:
+
+  %> make packfigs
 
   %> make plotclean
 
@@ -961,6 +963,11 @@ void doMaps(int flag, bool debug, const char* dir) {
     //**************************************************************************
     // ******** Y EFFICIENCY CUT ROTATED SPECIAL BINS ********
     //**************************************************************************
+    if (i>=3 && i<7) {
+      hist_effY_rot_cut_nbins[i]->Rebin(4);
+      hist_denY_rot_cut_nbins[i]->Rebin(4);
+    }
+
     hist_effY_rot_cut_nbins[i]->Divide(hist_effY_rot_cut_nbins[i], 
 				       hist_denY_rot_cut_nbins[i], 1, 1, "b");
     hist_effY_rot_cut_nbins[i]->GetXaxis()->SetTitle("y [mm]");
@@ -1502,6 +1509,9 @@ void doEnergy(int flag, bool debug, const char* dir) {
 			    "", CANVAS_SIZE_X, CANVAS_SIZE_Y);
       canv[i]->SetLogx();
       canv[i]->SetLogy();
+
+      if (i>=3 && i<7)
+	hist_en[i]->GetXaxis()->SetRangeUser(1.58,3500);
       hist_en[i]->Draw("colz");
       hist_en[i]->Write();
       
@@ -1543,9 +1553,18 @@ void doEnergy(int flag, bool debug, const char* dir) {
 		    "", CANVAS_SIZE_X, CANVAS_SIZE_Y);
       canv_pref[i]->SetLogx();
       canv_pref[i]->SetLogy();
+      if (i>=3 && i<7)
+	hist_en_pref[i]->GetXaxis()->SetRangeUser(1.58,3500);
       hist_en_pref[i]->Draw("colz");
       hist_en_pref[i]->Write();
       
+      TLatex label;
+      label.SetNDC();
+      label.SetTextSize(0.05);
+      label.SetTextAlign(30);
+      label.DrawLatex(0.92,0.875, entry[i].c_str());
+      label.SetTextAlign(11);
+
       canv_pref[i]->Print(Form("Energy_Plots/energy_PS_pref_%s.png",
 			       channels[i].name.c_str()));
       canv_pref[i]->Print(Form("Energy_Plots/energy_PS_pref_%s.pdf",

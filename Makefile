@@ -45,10 +45,12 @@ plotclean:
 FIGS =  Overlayed_Finger_YEff_nbins.png \
 	Overlayed_Sigmas_XEff_nbins.png \
 	Overlayed_Sigmas_YEff_nbins.png \
+	Overlayed_Sigmas_XEff_nbins.png \
 	align_2.png \
 	align_3.png \
 	efficiency_map_rotEJ_260.png \
 	efficiency_map_rotSCSN_81F2.png \
+	energy_PS_pref_SCSN_81F1.png \
 	energy_PS_EJ_200.png \
 	energy_PS_EJ_260.png \
 	energy_PS_EJ_260_2P.png \

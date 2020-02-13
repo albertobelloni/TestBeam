@@ -189,7 +189,7 @@ const int CANVAS_SIZE_Y = 500;
 
 // Declaration of functions defined in sliman2017.C file
 void doAlignmentPlots(bool debug = false, const char* dir = slim_dir);
-void doMaps(int flag = 63, bool debug = false, const char* dir = slim_dir);
+void doMaps(int flag = 23, bool debug = false, const char* dir = slim_dir);
 void doEnergy(int flag = 15, bool debug = false, const char* dir = slim_dir);
 void doTimeSlice(bool debug = false, const char* dir = slim_dir);
 
