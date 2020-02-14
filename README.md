@@ -11,6 +11,16 @@ to hold the histograms (.C, .root, .pdf, and .png):
 make slimprep
 ```
 
+Note the location of the H2 test beam ntuples. They currently are in:
+
+```
+LXPLUS: /afs/cern.ch/work/a/abelloni/CERN_July2017_TestBeam/SLIM_2/
+HEPCMS: /data/users/abelloni/CERN_TB_Jul17/SLIM_2/
+```
+
+One can explicitly indicate the file directory when using the commands below,
+or simply uncomment the relevant line in _sliman2017.h_ to conveniently
+select the proper default value for the parameter `slim_dir`.
 Then, run the main macro:
 
 ```
@@ -22,14 +32,15 @@ Then, run the main macro:
 ```
 
 The file _energy_hists.root_ shall also be created. It contains a tree with
-the energy of fiducial hits for each of the scintillator tiles.
+the energy of fiducial hits for each of the scintillator tiles, and binned
+energy distributions. This file is used as input to the fitters.
 
 ## Run the fitter(s)
 
 ### Physics-driven
 
 The physics-driven fitter requires the installation of Yi-Mu's RooFit PDFs.
-Instructions can be found in the top of _fitter2017.C_
+Instructions can be found in the top of _fitter2017.C_.
 Once compiled, run the fits on condor:
 
 
