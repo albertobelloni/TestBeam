@@ -1,3 +1,24 @@
+/*/////////////////////////////////////////////////////////////////////////////
+
+Typical usage:
+
+[] .L make_fitter_plots.C++
+[] make_fitter_plots("roofit_en_bins_SCSN_81F1_0_0_5.root")
+
+One can also produce all plots with:
+
+[] .L make_fitter_plots.C++
+[] make_all_fitter_plots()
+
+The roofit file shall contain a workspace with data and fit parameters
+(fit performed with SiPMPdf object)
+
+PROBLEMS:
+- vane attempt at changing X axis range of RooPlot frame object: it does
+modify the axis titles and offset, just seems not to like the range change
+
+ */////////////////////////////////////////////////////////////////////////////
+
 #include "RooRealVar.h"
 #include "TSystem.h"
 #include "TH1F.h"
@@ -17,22 +38,6 @@
 
 R__LOAD_LIBRARY(libSiPMCalibSiPMCalc)
 R__LOAD_LIBRARY(libSiPMCalibInvSqCalc)
-
-/*/////////////////////////////////////////////////////////////////////////////
-
-Typical usage:
-
-[] .L make_fitter_plots.C++
-[] make_fitter_plots("roofit_en_bins_SCSN_81F1_0_0_5.root")
-
-The roofit file shall contain a workspace with data and fit parameters
-(fit performed with SiPMPdf object)
-
-PROBLEMS:
-- vane attempt at changing X axis range of RooPlot frame object: it does
-modify the axis titles and offset, just seems not to like the range change
-
- */////////////////////////////////////////////////////////////////////////////
 
 // Helper function used to print the fit results
 // for the DN-18-007 note and the HCAL DPG presentation

@@ -8,6 +8,11 @@ Example usage:
  [] .L peakfinder.C+
  [] peakfinder("energy_hists.root","energy_tree_SCSN_81F1")
 
+One can also run all the fits with one command:
+
+ [] .L peakfinder.C+
+ [] run_peakfinder("energy_hists.root")
+
 INITIAL IDEA:
 
 The shape parameters of each Gaussian are related, but the normalizations
