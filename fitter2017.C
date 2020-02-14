@@ -45,6 +45,8 @@ root [2] fitter2017("energy_hists.root","en_bins_EJ_260",2,0,4)
 
  */////////////////////////////////////////////////////////////////////////////
 
+#pragma once
+
 #include "RooRealVar.h"
 #include "TSystem.h"
 #include "TH1F.h"
@@ -65,7 +67,7 @@ enum {BASELINE=0, WITHAFTERPULSING, FULL};
 enum {BINNED=0, UNBINNED};
 
 void fitter2017(const char* filename, const char* histname,
-		int fitmodel=FULL, int fittype=UNBINNED,
+		int fitmodel=BASELINE, int fittype=UNBINNED,
 		const int rebin=1) {
 
   // This might need to be loaded before calling the macro file.
@@ -80,17 +82,17 @@ void fitter2017(const char* filename, const char* histname,
   RooRealVar ped( "ped", "ped",            -2,  -10, 10 );
   RooRealVar gain( "gain", "gain",         40,    0, 1000 );
   RooRealVar s0( "s0", "s0",               12,  0.1, 100 );
-  RooRealVar s1( "s1", "s1",             0.01,    0, 10);
+  RooRealVar s1( "s1", "s1",                4,    0, 10);
   RooRealVar mean( "mean", "mean",          5, 0.01, 50 );
   RooRealVar lambda( "lambda", "lambda",  0.4,    0, 0.50 );
 
-  s1.setConstant(true);
-  s1.setVal(0);
+  //s1.setConstant(true);
+  //s1.setVal(0);
 
-  RooRealVar alpha( "alpha", "alpha", 0, 0.5 );
-  RooRealVar beta ( "beta", "beta", 10, 20000 );
-  RooRealVar dcfrac( "dcfrac", "dcfrac", 0, 0.4 );
-  RooRealVar eps( "eps", "eps", 1e-5, 1e-1 );
+  RooRealVar alpha( "alpha", "alpha",     0.4,     0, 0.5 );
+  RooRealVar beta ( "beta", "beta",       1e4,    10, 20000 );
+  RooRealVar dcfrac( "dcfrac", "dcfrac",          0, 0.4 );
+  RooRealVar eps( "eps", "eps",                1e-5, 1e-1 );
 
   SiPMPdf *p;
 
@@ -125,6 +127,7 @@ void fitter2017(const char* filename, const char* histname,
       return;
     }
     hist->Rebin(rebin);
+    hist->GetXaxis()->SetRangeUser(-20,400);
 
     if(hist->GetDimension()==0) {
       std::cout << "The dimension of the histogram is 0:"
@@ -166,7 +169,7 @@ void fitter2017(const char* filename, const char* histname,
 		<< "the tree name correct?\n";
       return;
     }
-    RooDataSet data("data","data", tree, RooArgSet(x), "x>-50 && x<600" );
+    RooDataSet data("data","data", tree, RooArgSet(x), "x>-20 && x<400" );
 
     // Running fit independent estimates on ped, gain, s0, s1, mean, lambda
     p->RunEstimate( data ) ;
