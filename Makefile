@@ -1,7 +1,31 @@
 SHELL := /bin/sh # sh is the default
-.SILENT: clean libclean slimprep plotclean cleanall
+.SILENT: help fitclean libclean slimprep plotclean
 
-.PHONY: list
+.PHONY: help
+
+help:
+	echo ""
+	echo "Here is what you can do:"
+	echo ""
+	echo " help:      print this message"
+	echo ""
+	echo " list:      print list of all possible targets"
+	echo ""
+	echo " fitclean:  move physics-driven and multi-Gaussian fit results"
+	echo "            to results/; create results/ if it does not exist"
+	echo ""
+	echo " libclean:  remove all _C.so, _C.d, and dict files"
+	echo ""
+	echo " slimprep:  create directory structure to hold non-fit plots"
+	echo ""
+	echo " plotclean: remove the directory structure with non-fit plots"
+	echo ""
+	echo " packfigs:  scour all directories and save .png files for note"
+	echo "            and presentation in a tarball"
+	echo ""
+	echo " cleanall:  clean directory to -almost- checkout state; does not"
+	echo "            remove results/ directory"
+	echo ""
 
 list:
 	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | \
@@ -9,7 +33,7 @@ list:
 	{if ($$1 !~ "^[#.]") {print $$1}}' | grep -v PHONY | grep -v \.png | \
 	sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$'
 
-clean:
+fitclean:
 	mkdir -p results
 	if ls roofit_e* >& /dev/null; then mv roofit_e* results/; \
 	else echo "No roofit files"; fi
@@ -124,5 +148,5 @@ $(ADDFIGS):
 
 packfigs: $(FIGS) $(ADDFIGS)
 
-cleanall: clean libclean plotclean
-	rm -f text_results.txt dn-18-007_figs.tar fiduciality_test_?.png
+cleanall: fitclean libclean plotclean
+	@rm -f text_results.txt dn-18-007_figs.tar fiduciality_test_?.png
