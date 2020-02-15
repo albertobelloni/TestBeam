@@ -1748,6 +1748,7 @@ void doEnergy(int flag, bool debug, const char* dir) {
     int max_index = 0;
     for (unsigned int k = 0; k < NUMCHAN; k++) {
       hist_en_ped[k]->SetLineColor(color[k]);
+      hist_en_ped[k]->SetLineStyle(style[k]);
       hist_en_ped[k]->Draw("same");
       leg_allped->AddEntry(hist_en_ped[k], entry[k].c_str(), "l");
       if (hist_en_ped[k]->GetMaximum()>max_value) {
