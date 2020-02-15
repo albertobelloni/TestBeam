@@ -1351,6 +1351,7 @@ void doEnergy(int flag, bool debug, const char* dir) {
   TH1F *hist_en[NUMCHAN]; // 8 is the number of tiles; channels.size() == 8
   TH1F *hist_en_pref[NUMCHAN]; // This is special binned, before fiducial cut
   TH1F *hist_en_bins[NUMCHAN]; // This will be used for pulse shape fits
+  TH1F *hist_en_bins_pref[NUMCHAN]; // Equal bins, before fiducial cut
   TH1F *hist_en_ped[NUMCHAN]; // This uses a region NOT where the tile is
   TTree *energy_tree[NUMCHAN];
 
@@ -1372,6 +1373,9 @@ void doEnergy(int flag, bool debug, const char* dir) {
     hist_en_bins[i] =
       new TH1F( Form("en_bins_%s", channels[i].name.c_str()),
 		"", enbins, -50.0, 600.0);
+    hist_en_bins_pref[i] =
+      new TH1F( Form("en_bins_pref_%s", channels[i].name.c_str()),
+		"", 300, -50.0, 550.0); // different binning: want to rebin/2
     hist_en_ped[i] =
       new TH1F( Form("en_ped_%s", channels[i].name.c_str()),
 		"", 37, -50,50); // binning here very fine tuned...
@@ -1447,6 +1451,7 @@ void doEnergy(int flag, bool debug, const char* dir) {
       
       // Here we have both fiducial and non-fiducial hits
       hist_en_pref[i]->Fill(energy_ps);
+      hist_en_bins_pref[i]->Fill(energy_ps);
 
       // THIS IS THE MOST IMPORTANT STEP 
       if (!isFiducial( i, x_hit, y_hit))
@@ -1466,6 +1471,7 @@ void doEnergy(int flag, bool debug, const char* dir) {
   TCanvas* canv[NUMCHAN];
   TCanvas* canv_pref[NUMCHAN];
   TCanvas* canv_bins[NUMCHAN];
+  TCanvas* canv_bins_pref[NUMCHAN];
   TCanvas* canv_ped[NUMCHAN];
 
   for (unsigned int i = 0; i < channels.size(); ++i) {
@@ -1481,6 +1487,11 @@ void doEnergy(int flag, bool debug, const char* dir) {
     hist_en_pref[i]->GetYaxis()->SetTitle("Events");
     hist_en_pref[i]->SetLineWidth(2);
     hist_en_pref[i]->SetLineColor(color[i]);
+
+    hist_en_bins_pref[i]->GetXaxis()->SetTitle("Charge [fC]");
+    hist_en_bins_pref[i]->GetYaxis()->SetTitle("Events");
+    hist_en_bins_pref[i]->SetLineWidth(2);
+    hist_en_bins_pref[i]->SetLineColor(color[i]);
 
     hist_en_ped[i]->GetXaxis()->SetTitle("Charge [fC]");
     hist_en_ped[i]->GetYaxis()->SetTitle("Events");
@@ -1585,6 +1596,9 @@ void doEnergy(int flag, bool debug, const char* dir) {
       canv_bins[i]->SetLogy();
       hist_en_bins[i]->Draw("colz");
       hist_en_bins[i]->Write();
+
+      // Why did I decide to write energy_tree when looping over
+      // standard-binned histograms? Unclear...
       energy_tree[i]->Write();
       
       TLatex label_bins;
@@ -1616,6 +1630,61 @@ void doEnergy(int flag, bool debug, const char* dir) {
       canv_bins[i]->Print(Form("Energy_Plots/energy_PS_bins_%s.C",
 			       channels[i].name.c_str()));
       delete canv_bins[i];
+    }
+
+    // *************************************************************************
+    // ******** STANDARD BINNING ENERGY HISTOGRAM BEFORE FIDUCIAL CUT *******
+    // *************************************************************************
+    if (bins) {
+      canv_bins_pref[i] =
+	new TCanvas(Form("en_bin_pref_canv_%s", channels[i].name.c_str()),
+		    "", CANVAS_SIZE_X, CANVAS_SIZE_Y);
+
+      hist_en_bins_pref[i]->Rebin(2);
+      hist_en_bins_pref[i]->GetXaxis()->SetRangeUser(-50,350);
+
+      if (i<3 || i==7)
+	hist_en_bins_pref[i]->GetYaxis()->SetMaxDigits(3);
+
+      hist_en_bins_pref[i]->Draw("colz");
+      canv_bins_pref[i]->Update(); // this may be needed to get the cut line
+      hist_en_bins_pref[i]->Write();
+
+      TLatex label;
+      label.SetNDC();
+      label.SetTextSize(0.05);
+      label.SetTextAlign(30);
+      label.DrawLatex(0.92,0.875, entry[i].c_str());
+      label.SetTextAlign(11);
+
+      TLine cut_line;
+      cut_line.SetLineWidth(2);
+      cut_line.SetLineStyle(kDashed);
+      cut_line.DrawLine(25, canv_bins_pref[i]->GetUymin(),
+			25, canv_bins_pref[i]->GetUymax());
+
+      canv_bins_pref[i]->Print(Form("Energy_Plots/energy_PS_bins_pref_%s.png",
+			       channels[i].name.c_str()));
+      canv_bins_pref[i]->Print(Form("Energy_Plots/energy_PS_bins_pref_%s.pdf",
+			       channels[i].name.c_str()));
+      canv_bins_pref[i]->Print(Form("Energy_Plots/energy_PS_bins_pref_%s.C",
+			       channels[i].name.c_str()));
+
+      // Let me here make the log plot!
+      cut_line.Delete();
+      canv_bins_pref[i]->SetLogy();
+      canv_bins_pref[i]->Update(); // this may be needed to get the cut line
+      cut_line.DrawLine(25, TMath::Power(10,canv_bins_pref[i]->GetUymin()),
+			25, TMath::Power(10,canv_bins_pref[i]->GetUymax()));
+
+      canv_bins_pref[i]->Print(Form("Energy_Plots/energy_PS_bins_pref_"
+				    "log_%s.png", channels[i].name.c_str()));
+      canv_bins_pref[i]->Print(Form("Energy_Plots/energy_PS_bins_pref_"
+				    "log_%s.pdf", channels[i].name.c_str()));
+      canv_bins_pref[i]->Print(Form("Energy_Plots/energy_PS_bins_pref_"
+				    "log_%s.C", channels[i].name.c_str()));
+
+      delete canv_bins_pref[i];
     }
 
     // *************************************************************************

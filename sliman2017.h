@@ -166,10 +166,10 @@ const int style[NUMCHAN] = {
   kDotted,
   kSolid,
   kSolid,
+  kSolid,
+  kDashed,
+  kSolid,
   kDotted,
-  kSolid,
-  kSolid,
-  kSolid,
   kDashed
 };
 

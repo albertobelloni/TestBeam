@@ -136,7 +136,7 @@ void make_fitter_plots(const char* filename, bool logy = false) {
 
   // Formatted output for DN-18-007
   fprintf(output,
-	  "DN-18-007_NOTE %d & %.3f\\pm%.3f & %.3f\\pm%.3f & %.3f\\pm%.3f\n",
+	  "DN-18-007_NOTE %d &$%.3f\\pm%.3f$&$%.3f\\pm%.3f$&$%.3f\\pm%.3f$\n",
 	  row,
 	  mean->getValV(),mean->getError(),
 	  lambda->getValV(),lambda->getError(),

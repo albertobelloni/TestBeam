@@ -72,9 +72,19 @@ FIGS =  Overlayed_Finger_YEff_nbins.png \
 	Overlayed_Sigmas_XEff_nbins.png \
 	align_2.png \
 	align_3.png \
+	efficiency_map_EJ_260.png \
+	efficiency_map_SCSN_81F2.png \
+	efficiency_map_rotEJ_200.png \
 	efficiency_map_rotEJ_260.png \
+	efficiency_map_rotEJ_260_2P.png \
+	efficiency_map_rotSCSN_81F1.png \
 	efficiency_map_rotSCSN_81F2.png \
-	energy_PS_pref_SCSN_81F1.png \
+	efficiency_map_rotSCSN_81F3.png \
+	efficiency_map_rotSCSN_81F4.png \
+	efficiency_map_rotSCSN_81S.png \
+	energyPS_all_ped.png \
+	energy_PS_bins_pref_SCSN_81F1.png \
+	energy_PS_bins_pref_log_SCSN_81F1.png \
 	energy_PS_EJ_200.png \
 	energy_PS_EJ_260.png \
 	energy_PS_EJ_260_2P.png \
@@ -83,19 +93,23 @@ FIGS =  Overlayed_Finger_YEff_nbins.png \
 	energy_PS_SCSN_81F3.png \
 	energy_PS_SCSN_81F4.png \
 	energy_PS_SCSN_81S.png \
+	canvas_energy_tree_EJ_200_0_1_1_lin.png \
+	canvas_energy_tree_EJ_200_0_1_1_log.png \
+	canvas_energy_tree_SCSN_81F1_0_1_1_lin.png \
+	canvas_energy_tree_SCSN_81F1_0_1_1_log.png \
+	canvas_gaussfit_lin_EJ_200.png \
+	canvas_gaussfit_lin_SCSN_81F1.png \
+	canvas_gaussfit_log_EJ_200.png \
+	canvas_gaussfit_log_SCSN_81F1.png \
 	ts.png \
 	tsF.png
 
 ADDFIGS = align_0.png \
 	align_1.png \
-	canvas_energy_tree_EJ_200_0_1_1_lin.png \
-	canvas_energy_tree_EJ_200_0_1_1_log.png \
 	canvas_energy_tree_EJ_260_0_1_1_lin.png \
 	canvas_energy_tree_EJ_260_0_1_1_log.png \
 	canvas_energy_tree_EJ_260_2P_0_1_1_lin.png \
 	canvas_energy_tree_EJ_260_2P_0_1_1_log.png \
-	canvas_energy_tree_SCSN_81F1_0_1_1_lin.png \
-	canvas_energy_tree_SCSN_81F1_0_1_1_log.png \
 	canvas_energy_tree_SCSN_81F1_1_1_1_lin.png \
 	canvas_energy_tree_SCSN_81F1_1_1_1_log.png \
 	canvas_energy_tree_SCSN_81F2_0_1_1_lin.png \
@@ -106,31 +120,18 @@ ADDFIGS = align_0.png \
 	canvas_energy_tree_SCSN_81F4_0_1_1_log.png \
 	canvas_energy_tree_SCSN_81S_0_1_1_lin.png \
 	canvas_energy_tree_SCSN_81S_0_1_1_log.png \
-	canvas_gaussfit_lin_EJ_200.png \
 	canvas_gaussfit_lin_EJ_260.png \
 	canvas_gaussfit_lin_EJ_260_2P.png \
-	canvas_gaussfit_lin_SCSN_81F1.png \
 	canvas_gaussfit_lin_SCSN_81F2.png \
 	canvas_gaussfit_lin_SCSN_81F3.png \
 	canvas_gaussfit_lin_SCSN_81F4.png \
 	canvas_gaussfit_lin_SCSN_81S.png \
-	canvas_gaussfit_log_EJ_200.png \
 	canvas_gaussfit_log_EJ_260.png \
 	canvas_gaussfit_log_EJ_260_2P.png \
-	canvas_gaussfit_log_SCSN_81F1.png \
 	canvas_gaussfit_log_SCSN_81F2.png \
 	canvas_gaussfit_log_SCSN_81F3.png \
 	canvas_gaussfit_log_SCSN_81F4.png \
-	canvas_gaussfit_log_SCSN_81S.png \
-	efficiency_map_EJ_260.png \
-	efficiency_map_SCSN_81F2.png \
-	efficiency_map_rotEJ_200.png \
-	efficiency_map_rotEJ_260_2P.png \
-	efficiency_map_rotSCSN_81F1.png \
-	efficiency_map_rotSCSN_81F3.png \
-	efficiency_map_rotSCSN_81F4.png \
-	efficiency_map_rotSCSN_81S.png \
-	energyPS_all_ped.png
+	canvas_gaussfit_log_SCSN_81S.png
 
 $(FIGS):
 	@if find . -name $@ | egrep '.*' >& /dev/null; then \
