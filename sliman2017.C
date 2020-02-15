@@ -1352,7 +1352,8 @@ void doEnergy(int flag, bool debug, const char* dir) {
   TH1F *hist_en_pref[NUMCHAN]; // This is special binned, before fiducial cut
   TH1F *hist_en_bins[NUMCHAN]; // This will be used for pulse shape fits
   TH1F *hist_en_bins_pref[NUMCHAN]; // Equal bins, before fiducial cut
-  TH1F *hist_en_ped[NUMCHAN]; // This uses a region NOT where the tile is
+  TH1F *hist_en_afid[NUMCHAN]; // This uses a region NOT where the tile is
+  TH1F *hist_en_ped[NUMCHAN]; // Pedestal: use pedestal time slices
   TTree *energy_tree[NUMCHAN];
 
   if (channels.size()!= NUMCHAN) {
@@ -1376,9 +1377,12 @@ void doEnergy(int flag, bool debug, const char* dir) {
     hist_en_bins_pref[i] =
       new TH1F( Form("en_bins_pref_%s", channels[i].name.c_str()),
 		"", 300, -50.0, 550.0); // different binning: want to rebin/2
+    hist_en_afid[i] =
+      new TH1F( Form("en_afid_%s", channels[i].name.c_str()),
+		"", 37, -50,50); // binning here very fine tuned...
     hist_en_ped[i] =
       new TH1F( Form("en_ped_%s", channels[i].name.c_str()),
-		"", 37, -50,50); // binning here very fine tuned...
+		"", 50, 0,100); // binning here very fine tuned...
     energy_tree[i] = new TTree( Form("energy_tree_%s",
 				     channels[i].name.c_str()),"");
     energy_tree[i]->Branch("x",&energy[i],"x/D");
@@ -1442,12 +1446,17 @@ void doEnergy(int flag, bool debug, const char* dir) {
       // I think this is the pedestal cut?
       energy_ps-=TIMESLICES.size()*ped[channels[i].chan];
 
+      // I think I can fill the pedestal plot without any cut on
+      // fiduciality: whether there is a muon or not, we are
+      // plotting the energy measured out of time
+      hist_en_ped[i]->Fill(ped[channels[i].chan]);
+
       // Look for anti-fiduciality to fill pedestal plot
       // not enough to say !isFiducial,
       // want to leave some space between fiducial region
       // and anti-fiducial region
       if ( isOtherFiducial( i, x_hit, y_hit, anti_fiducialX, anti_fiducialY))
-	hist_en_ped[i]->Fill(energy_ps);
+	hist_en_afid[i]->Fill(energy_ps);
       
       // Here we have both fiducial and non-fiducial hits
       hist_en_pref[i]->Fill(energy_ps);
@@ -1472,6 +1481,7 @@ void doEnergy(int flag, bool debug, const char* dir) {
   TCanvas* canv_pref[NUMCHAN];
   TCanvas* canv_bins[NUMCHAN];
   TCanvas* canv_bins_pref[NUMCHAN];
+  TCanvas* canv_afid[NUMCHAN];
   TCanvas* canv_ped[NUMCHAN];
 
   for (unsigned int i = 0; i < channels.size(); ++i) {
@@ -1480,7 +1490,8 @@ void doEnergy(int flag, bool debug, const char* dir) {
     hist_en[i]->GetYaxis()->SetTitle("Events");
     hist_en[i]->SetLineWidth(2);
     hist_en[i]->SetLineColor(color[i]);
-    cout << "After fiducial cut, we use " << (int)hist_en[i]->GetEntries() 
+
+    cout << "\nAfter fiducial cut, we use " << (int)hist_en[i]->GetEntries() 
 	 << " entries for " << entry[i].c_str() << endl;
 
     hist_en_pref[i]->GetXaxis()->SetTitle("Charge [fC]");
@@ -1493,18 +1504,25 @@ void doEnergy(int flag, bool debug, const char* dir) {
     hist_en_bins_pref[i]->SetLineWidth(2);
     hist_en_bins_pref[i]->SetLineColor(color[i]);
 
+    hist_en_afid[i]->GetXaxis()->SetTitle("Charge [fC]");
+    hist_en_afid[i]->GetYaxis()->SetTitle("Events");
+    hist_en_afid[i]->SetLineWidth(2);
+    hist_en_afid[i]->SetLineColor(color[i]);
+
     hist_en_ped[i]->GetXaxis()->SetTitle("Charge [fC]");
     hist_en_ped[i]->GetYaxis()->SetTitle("Events");
     hist_en_ped[i]->SetLineWidth(2);
     hist_en_ped[i]->SetLineColor(color[i]);
-    cout << "After (anti-)fiducial cut, we use "
-	 << (int)hist_en_ped[i]->GetEntries() 
-	 << " entries for " << entry[i].c_str() << " pedestal" << endl;
+
+    cout << "\nAfter (anti-)fiducial cut, we use "
+	 << (int)hist_en_afid[i]->GetEntries() 
+	 << " entries for " << entry[i].c_str() << " anti-fiducial\n\n";
 
     hist_en_bins[i]->GetXaxis()->SetTitle("Charge [fC]");
     hist_en_bins[i]->GetYaxis()->SetTitle("Events");
     hist_en_bins[i]->SetLineWidth(2);
     hist_en_bins[i]->SetLineColor(color[i]);
+
     if (hist_en[i]->GetEntries()!=hist_en_bins[i]->GetEntries()) {
       cout << "Argh, the two energy plots should have"
 	   << " the same number of entries!" << endl
@@ -1688,6 +1706,35 @@ void doEnergy(int flag, bool debug, const char* dir) {
     }
 
     // *************************************************************************
+    // ******** ANTI-FIDUCIAL HISTOGRAM *******
+    // *************************************************************************
+    if (pedestal) {
+      canv_afid[i] = new TCanvas(channels[i].name.c_str(),
+				 "", CANVAS_SIZE_X, CANVAS_SIZE_Y);
+      canv_afid[i]->SetLogx();
+      canv_afid[i]->SetLogy();
+      hist_en_afid[i]->Draw("colz");
+      hist_en_afid[i]->Write();
+      
+      TLatex label_afid;
+      label_afid.SetNDC();
+      label_afid.SetTextSize(0.05);
+      label_afid.SetTextAlign(30);
+      label_afid.DrawLatex(0.92, 0.875, Form( "%s anti-fiducial", 
+					      entry[i].c_str()));
+      label_afid.SetTextAlign(11);
+            
+      //canv_afid[i]->Modified();
+      canv_afid[i]->Print(Form("Energy_Plots/energy_PS_afid_%s.png",
+			       channels[i].name.c_str()));
+      canv_afid[i]->Print(Form("Energy_Plots/energy_PS_afid_%s.pdf",
+			       channels[i].name.c_str()));
+      canv_afid[i]->Print(Form("Energy_Plots/energy_PS_afid_%s.C",
+			       channels[i].name.c_str()));
+      delete canv_afid[i];
+    } // if (ped)
+
+    // *************************************************************************
     // ******** PEDESTAL HISTOGRAM *******
     // *************************************************************************
     if (pedestal) {
@@ -1702,24 +1749,9 @@ void doEnergy(int flag, bool debug, const char* dir) {
       label_ped.SetNDC();
       label_ped.SetTextSize(0.05);
       label_ped.SetTextAlign(30);
-      label_ped.DrawLatex(0.92, 0.875, Form( "%s ped", entry[i].c_str()));
+      label_ped.DrawLatex(0.92, 0.875, Form( "%s pedestal", entry[i].c_str()));
       label_ped.SetTextAlign(11);
-      
-      // note the +1 in GetNbinsX to include overflow bin
-      float fakerate_ped =
-	hist_en_ped[i]->Integral(hist_en_ped[i]->FindBin(25),
-				 hist_en_ped[i]->GetNbinsX()+1) /
-	hist_en[i]->GetEntries();
-      
-      //float fakerate_err = TMath::Sqrt(eff*(1-eff)/hist_en[i]->GetEntries());
-      fakerate_ped*=100;
-      //fakerate_err*=100;
-      label_ped.DrawLatex(0.20,0.225, Form("#splitline{fake rate=%4.1f%%}"
-					   "{Mean=%3.1f#pm%3.1ffC}",
-					   fakerate_ped,
-					   hist_en_ped[i]->GetMean(),
-					   hist_en_ped[i]->GetMeanError()));
-      
+            
       //canv_ped[i]->Modified();
       canv_ped[i]->Print(Form("Energy_Plots/energy_PS_ped_%s.png",
 			      channels[i].name.c_str()));
@@ -1737,13 +1769,13 @@ void doEnergy(int flag, bool debug, const char* dir) {
   // ***************************************************************************
   if (overlay) {
 
-    TLegend* leg_allped = new TLegend(0.6,0.56,0.87,0.9,"","brNDC");
+    TLegend* leg_allped = new TLegend(0.636,0.575,0.906,0.915,"","brNDC");
     leg_allped->SetTextSize(.04);
 
     TCanvas* canv_allped =
       new TCanvas("overlayed_pedestal", "", CANVAS_SIZE_X, CANVAS_SIZE_Y);
-    canv_allped->SetLogx();
-    
+    canv_allped->SetLogy();
+
     float max_value = -99;
     int max_index = 0;
     for (unsigned int k = 0; k < NUMCHAN; k++) {
@@ -1763,10 +1795,58 @@ void doEnergy(int flag, bool debug, const char* dir) {
     leg_allped->Draw("same");    
     hist_en_ped[max_index]->Draw("same,axis");
 
-    canv_allped->Print("Overlayed_Plots/energyPS_all_ped.png");
-    canv_allped->Print("Overlayed_Plots/energyPS_all_ped.pdf");
-    canv_allped->Print("Overlayed_Plots/energyPS_all_ped.C");
+    canv_allped->Print("Overlayed_Plots/energyPS_all_ped_log.png");
+    canv_allped->Print("Overlayed_Plots/energyPS_all_ped_log.pdf");
+    canv_allped->Print("Overlayed_Plots/energyPS_all_ped_log.C");
+
+    // Now we produce the lin-scale plot, in reduced range
+    canv_allped->SetLogy(0);
+
+    hist_en_ped[max_index]->GetXaxis()->SetRangeUser(0,50);
+    hist_en_ped[max_index]->Draw("same,axis");
+
+    canv_allped->Print("Overlayed_Plots/energyPS_all_ped_lin.png");
+    canv_allped->Print("Overlayed_Plots/energyPS_all_ped_lin.pdf");
+    canv_allped->Print("Overlayed_Plots/energyPS_all_ped_lin.C");
+
     delete canv_allped;
+  }
+
+  // ***************************************************************************
+  // ******** OVERLAY THE ANTI-FIDUCIAL *******
+  // ***************************************************************************
+  if (overlay) {
+
+    TLegend* leg_allafid = new TLegend(0.6,0.56,0.87,0.9,"","brNDC");
+    leg_allafid->SetTextSize(.04);
+
+    TCanvas* canv_allafid =
+      new TCanvas("overlayed_afiducial", "", CANVAS_SIZE_X, CANVAS_SIZE_Y);
+    canv_allafid->SetLogx();
+    
+    float max_value = -99;
+    int max_index = 0;
+    for (unsigned int k = 0; k < NUMCHAN; k++) {
+      hist_en_afid[k]->SetLineColor(color[k]);
+      hist_en_afid[k]->SetLineStyle(style[k]);
+      hist_en_afid[k]->Draw("same");
+      leg_allafid->AddEntry(hist_en_afid[k], entry[k].c_str(), "l");
+      if (hist_en_afid[k]->GetMaximum()>max_value) {
+	max_index = k;
+	max_value = hist_en_afid[k]->GetMaximum();
+      }
+    }
+    
+    hist_en_afid[max_index]->Draw();
+    for (unsigned int k = 0; k < NUMCHAN; k++)
+      hist_en_afid[k]->Draw("same");
+    leg_allafid->Draw("same");    
+    hist_en_afid[max_index]->Draw("same,axis");
+
+    canv_allafid->Print("Overlayed_Plots/energyPS_all_afid.png");
+    canv_allafid->Print("Overlayed_Plots/energyPS_all_afid.pdf");
+    canv_allafid->Print("Overlayed_Plots/energyPS_all_afid.C");
+    delete canv_allafid;
   }
 
   energy_hists->Close();
