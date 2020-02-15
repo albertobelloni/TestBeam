@@ -7,7 +7,7 @@ ROOT macros to analyze H2 testbeam ntuples
 The macro _slimmer\_2017.C_ is used to produce ntuples with smaller
 event footprint than the ntuples produced with whichever package will
 produce the next test-beam ntuples. For the 2017 test-beam data, we
-used [https://github.com/BaylorCMS/HCALTestBeam].
+used https://github.com/BaylorCMS/HCALTestBeam.
 
 There is a small inconveniency here. We need to:
 
