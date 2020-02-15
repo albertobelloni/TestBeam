@@ -2,10 +2,32 @@
 
 ROOT macros to analyze H2 testbeam ntuples
 
+## Prepare slimmed ntuples
+
+The macro _slimmer\_2017.C_ is used to produce ntuples with smaller
+event footprint than the ntuples produced with whichever package will
+produce the next test-beam ntuples. For the 2017 test-beam data, we
+used [https://github.com/BaylorCMS/HCALTestBeam].
+
+There is a small inconveniency here. We need to:
+
+- make the slimmed ntuples once
+
+- run the macro which produces the alignment plots, _sliman2017.C_
+  (run the `doAlignmentPlots()` function)
+
+- obtain the x- and y- offset of the wire chambers, as printed out at
+  the end of step above
+
+- write the offsets in the top part of _slimmer\_2017.C_ and
+  _sliman2017.C_
+
+- well, run again the slimming job...
+
 ## Produce (most of) the plots and create the file with the energy tree
 
-The main macro is _sliman2017.C_. First, start creating the directory structure
-to hold the histograms (.C, .root, .pdf, and .png):
+The main macro is _sliman2017.C_. First, start creating the directory
+structure to hold the histograms (.C, .root, .pdf, and .png):
 
 ```
 make slimprep
