@@ -82,7 +82,7 @@ FIGS =  Overlayed_Finger_YEff_nbins.png \
 	efficiency_map_rotSCSN_81F3.png \
 	efficiency_map_rotSCSN_81F4.png \
 	efficiency_map_rotSCSN_81S.png \
-	energyPS_all_ped.png \
+	energyPS_all_afid.png \
 	energy_PS_bins_pref_SCSN_81F1.png \
 	energy_PS_bins_pref_log_SCSN_81F1.png \
 	energy_PS_EJ_200.png \
@@ -106,6 +106,7 @@ FIGS =  Overlayed_Finger_YEff_nbins.png \
 
 ADDFIGS = align_0.png \
 	align_1.png \
+	energyPS_all_ped_log.png \
 	canvas_energy_tree_EJ_260_0_1_1_lin.png \
 	canvas_energy_tree_EJ_260_0_1_1_log.png \
 	canvas_energy_tree_EJ_260_2P_0_1_1_lin.png \
