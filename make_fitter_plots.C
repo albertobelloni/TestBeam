@@ -118,7 +118,7 @@ void make_fitter_plots(const char* filename, bool logy = false) {
 
   // Save formatted outputs to a file
   FILE *output;
-  output = fopen("text_results.txt","a");
+  output = fopen("yield_results.txt","a");
 
   // Formatted output for presentation
   int row=idx(filename);
