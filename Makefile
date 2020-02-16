@@ -151,4 +151,4 @@ $(ADDFIGS):
 packfigs: $(FIGS) $(ADDFIGS)
 
 cleanall: fitclean libclean plotclean
-	@rm -f text_results.txt dn-18-007_figs.tar fiduciality_test_?.png
+	@rm -f yield_results.txt dn-18-007_figs.tar fiduciality_test_?.png

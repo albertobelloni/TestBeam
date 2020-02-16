@@ -20,7 +20,7 @@ There is a small inconveniency here. We need to:
   the end of step above
 
 - write the offsets in the top part of _slimmer\_2017.C_ and
-  _sliman2017.C_
+  _sliman2017.h_
 
 - well, run again the slimming job...
 
@@ -80,7 +80,7 @@ One shall then produce histograms, from the _roofit\_\*_ files. This is
 accomplished by running the _make\_fitter\_plots.C_ macro. Again, instructions
 are provided in the top part of the macro.
 
-Together with the plots, a text file with some fit results, _text\_results.txt_,
+Together with the plots, a text file with some fit results, _yield\_results.txt_,
 is saved. Let us now run the multi-Gaussian fitter, and collect in the same
 file the results of the other two <p.e.> estimators, before copying it to
 the DN-18-007 directory.
@@ -88,7 +88,7 @@ the DN-18-007 directory.
 ### Multi-Gaussian
 
 The main macro is _peakfinder.C_. Instructions on how to run it are reported
-in the top part of that file. Once run, the _text\_results.txt_ file will
+in the top part of that file. Once run, the _yield\_results.txt_ file will
 also contain the results of the <p.e.> estimation using the histogram integral
 and multi-Gaussian fit methods. It is now ready to be copied to the DN-18-007
 directory.
@@ -110,7 +110,7 @@ The directory does look nicer, if one runs `make fitclean`.
 
 ## Clean all
 
-The following command will remove _text\_results.txt_, _dn-18-007\_figs.tar_,
+The following command will remove _yield\_results.txt_, _dn-18-007\_figs.tar_,
 all the compiled code (\_C.so, \_C.d, and dictionary files), and the directories
 created by the `make slimprep` command:
 
