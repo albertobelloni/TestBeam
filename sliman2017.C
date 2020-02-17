@@ -1365,6 +1365,7 @@ void doEnergy(int flag, bool debug, const char* dir) {
 
   // Some global variable, to use to fill the trees
   double energy[NUMCHAN];
+  int fid_flag[NUMCHAN];
 
   for (unsigned int i = 0; i < channels.size(); ++i) {
     hist_en[i] =
@@ -1386,6 +1387,7 @@ void doEnergy(int flag, bool debug, const char* dir) {
     energy_tree[i] = new TTree( Form("energy_tree_%s",
 				     channels[i].name.c_str()),"");
     energy_tree[i]->Branch("x",&energy[i],"x/D");
+    energy_tree[i]->Branch("flag",&fid_flag[i],"flag/I");
   }
 
   // Now we get the data
@@ -1469,6 +1471,21 @@ void doEnergy(int flag, bool debug, const char* dir) {
       hist_en[i]->Fill(energy_ps);
       hist_en_bins[i]->Fill(energy_ps);
       energy[i] = energy_ps;
+
+      // For the sake of keeping the code compatible with all the
+      // other macros, let me distinguish _here_
+      // if hit is central or peripheral
+      // The central region is defined as follows:
+      // -30mm < x < 0mm
+      // -30mm < y < 0mm
+      double x_hit_rot = rotate_Point(x_hit, y_hit, i, 'X');
+      double y_hit_rot = rotate_Point(x_hit, y_hit, i, 'Y');
+      if (abs(x_hit_rot+15)<15 &&
+	  abs(y_hit_rot+15)<15)
+	fid_flag[i] = 1;
+      else
+	fid_flag[i] = 0;
+
       energy_tree[i]->Fill();
 
     } // loop on channels
@@ -2045,11 +2062,15 @@ void doFiducialTest(const int tile=0) {
   TH2F *isFid      = new TH2F("isFid",     "",200,-100,100,200,-100,100);
   TH2F *isRotFid   = new TH2F("isRotFid",  "",200,-100,100,200,-100,100);
   TH2F *isNotFid   = new TH2F("isNotFid",  "",200,-100,100,200,-100,100);
+  TH2F *isCenFid   = new TH2F("isCenFid",  "",200,-100,100,200,-100,100);
+  TH2F *isPerFid   = new TH2F("isPerFid",  "",200,-100,100,200,-100,100);
   TH2F *isOtherFid = new TH2F("isOtherFid","",200,-100,100,200,-100,100);
 
   isFid->GetXaxis()->SetTitle(Form("Fiducial, tile %d",tile));
   isRotFid->GetXaxis()->SetTitle(Form("Rotated fiducial, tile %d",tile));
   isNotFid->GetXaxis()->SetTitle(Form("Not-fiducial, tile %d",tile));
+  isCenFid->GetXaxis()->SetTitle(Form("Central fiducial, tile %d",tile));
+  isPerFid->GetXaxis()->SetTitle(Form("Peripheral fiducial, tile %d",tile));
   isOtherFid->GetXaxis()->SetTitle(Form("Anti-fiducial, tile %d",tile));
 
   TRandom3 *rndm = new TRandom3();
@@ -2073,12 +2094,19 @@ void doFiducialTest(const int tile=0) {
     if(isOtherFiducial(tile,x,y,anti_fiducialX,anti_fiducialY))
        isOtherFid->Fill(x,y);
 
+    if (isRotFiducial(tile,x,y)) {
+      if (abs(x+15)<15 &&
+	  abs(y+15)<15)
+	isCenFid->Fill(x,y);
+      else
+	isPerFid->Fill(x,y);
+    }
   }
 
   TCanvas *canv =
     new TCanvas(Form("canv_fiduciality_test_%d",tile),
 		Form("Test of fiduciality cut, tile %d",tile),800,800);
-  canv->Divide(2,2);
+  canv->Divide(3,2);
   canv->cd(1);
   isFid->Draw("box");
   canv->cd(2);
@@ -2087,6 +2115,10 @@ void doFiducialTest(const int tile=0) {
   isRotFid->Draw("box");
   canv->cd(4);
   isOtherFid->Draw("box");
+  canv->cd(5);
+  isCenFid->Draw("box");
+  canv->cd(6);
+  isPerFid->Draw("box");
   canv->Print(Form("fiduciality_test_%d.png",tile));
 
   return;

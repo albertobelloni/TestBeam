@@ -139,14 +139,16 @@ $(FIGS):
 	convert `find . -name $@` -transparent white `find . -name $@`; \
 	tar --transform "s|`find . -name $@ -printf '%h\n'`|figs|" \
 	-uf dn-18-007_figs.tar `find . -name $@`; \
-	else echo "File $@ not found!"; fi
+	echo "Added file $@ in figs/"; \
+	else echo "          File $@ not found!"; fi
 
 $(ADDFIGS):
 	@if find . -name $@ | egrep '.*' >& /dev/null; then \
 	convert `find . -name $@` -transparent white `find . -name $@`; \
 	tar --transform "s|`find . -name $@ -printf '%h\n'`|addfigs|" \
 	-uf dn-18-007_figs.tar `find . -name $@`; \
-	else echo "File $@ not found!"; fi
+	echo "Added file $@ in addfigs/"; \
+	else echo "          File $@ not found!"; fi
 
 packfigs: $(FIGS) $(ADDFIGS)
 

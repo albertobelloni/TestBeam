@@ -80,7 +80,8 @@ int idx(const char* treename);
 
 // The main function: this is the one you call!
 void peakfinder(const char* filename,
-		const char* treename) {
+		const char* treename,
+		const char* cut = "") {
 
   
   TFile *file = TFile::Open(filename);
@@ -105,7 +106,7 @@ void peakfinder(const char* filename,
 
   const char* histname = Form("hist_%s",treename);
   TH1F *hist = new TH1F(histname,"",100,-50,550);
-  tree->Project(histname,"x"); // x is the variable inside the relevant tree
+  tree->Project(histname,"x",cut); // x is the variable inside the relevant tree
 
   TSpectrum *spec = new TSpectrum(2*NPEAKS);
 
