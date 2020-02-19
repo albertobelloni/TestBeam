@@ -94,8 +94,8 @@ FIGS =  Overlayed_Finger_YEff_nbins.png \
 	energy_PS_SCSN_81F3.png \
 	energy_PS_SCSN_81F4.png \
 	energy_PS_SCSN_81S.png \
-	canvas_energy_tree_EJ_200_0_1_1_lin.png \
-	canvas_energy_tree_EJ_200_0_1_1_log.png \
+	canvas_energy_tree_EJ_260_2P_0_1_1_lin.png \
+	canvas_energy_tree_EJ_260_2P_0_1_1_log.png \
 	canvas_energy_tree_SCSN_81F1_0_1_1_lin.png \
 	canvas_energy_tree_SCSN_81F1_0_1_1_log.png \
 	canvas_gaussfit_lin_EJ_200.png \
@@ -107,12 +107,10 @@ FIGS =  Overlayed_Finger_YEff_nbins.png \
 
 ADDFIGS = align_0.png \
 	align_1.png \
+	canvas_energy_tree_EJ_200_0_1_1_lin.png \
+	canvas_energy_tree_EJ_200_0_1_1_log.png \
 	canvas_energy_tree_EJ_260_0_1_1_lin.png \
 	canvas_energy_tree_EJ_260_0_1_1_log.png \
-	canvas_energy_tree_EJ_260_2P_0_1_1_lin.png \
-	canvas_energy_tree_EJ_260_2P_0_1_1_log.png \
-	canvas_energy_tree_SCSN_81F1_1_1_1_lin.png \
-	canvas_energy_tree_SCSN_81F1_1_1_1_log.png \
 	canvas_energy_tree_SCSN_81F2_0_1_1_lin.png \
 	canvas_energy_tree_SCSN_81F2_0_1_1_log.png \
 	canvas_energy_tree_SCSN_81F3_0_1_1_lin.png \
@@ -134,6 +132,13 @@ ADDFIGS = align_0.png \
 	canvas_gaussfit_log_SCSN_81F4.png \
 	canvas_gaussfit_log_SCSN_81S.png
 
+$(FIGS:.png=.pdf):
+	@if find . -name $@ | egrep '.*' >& /dev/null; then \
+	tar --transform "s|`find . -name $@ -printf '%h\n'`|figs|" \
+	-uf dn-18-007_figs.tar `find . -name $@`; \
+	echo "Added file $@ in figs/"; \
+	else echo "          File $@ not found!"; fi
+
 $(FIGS):
 	@if find . -name $@ | egrep '.*' >& /dev/null; then \
 	convert `find . -name $@` -transparent white `find . -name $@`; \
@@ -150,7 +155,7 @@ $(ADDFIGS):
 	echo "Added file $@ in addfigs/"; \
 	else echo "          File $@ not found!"; fi
 
-packfigs: $(FIGS) $(ADDFIGS)
+packfigs: $(FIGS:.png=.pdf) $(FIGS) $(ADDFIGS)
 
 cleanall: fitclean libclean plotclean
 	@rm -f yield_results.txt dn-18-007_figs.tar fiduciality_test_?.png

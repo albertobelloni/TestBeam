@@ -1106,7 +1106,7 @@ void doMaps(int flag, bool debug, const char* dir) {
     //**************************************************************************
     // ******** OVERLAYED FINGER TILES X ********
     //**************************************************************************
-    TLegend* leg_fingX = new TLegend(0.2,0.7,0.4,0.9,"","brNDC");
+    TLegend* leg_fingX = new TLegend(0.616,0.7,0.91766,0.924,"","brNDC");
     canv_allfingersX = new TCanvas("Overlayed_FingersX", "", 500, 500);
     
     for (auto k : fingers) {
@@ -1127,7 +1127,7 @@ void doMaps(int flag, bool debug, const char* dir) {
     label_fingX.SetTextAlign(30);
     //label_fingX.DrawLatex(0.92,0.875, "Finger Tiles X Eff");
 
-    leg_fingX->SetTextSize(.03);
+    leg_fingX->SetTextSize(0.04);
     leg_fingX->Draw();
   
     // Now update
@@ -1152,7 +1152,7 @@ void doMaps(int flag, bool debug, const char* dir) {
     //**************************************************************************
     // ******** OVERLAYED FINGER TILES Y ********
     //**************************************************************************
-    TLegend* leg_fingY = new TLegend(0.4,0.2,0.6,0.5,"","brNDC");
+    TLegend* leg_fingY = new TLegend(0.4,0.2,0.7,0.424,"","brNDC");
     canv_allfingersY = new TCanvas("Overlayed_Fingers", "", 500, 500);
     
     for (auto k : fingers) {
@@ -1173,7 +1173,7 @@ void doMaps(int flag, bool debug, const char* dir) {
     label_fing.SetTextAlign(30);
     //label_fing.DrawLatex(0.92,0.875, "Finger Tiles Y Eff");
   
-    leg_fingY->SetTextSize(.03);
+    leg_fingY->SetTextSize(0.04);
     leg_fingY->Draw();
     // Have to do this after a Draw
   
@@ -1186,7 +1186,7 @@ void doMaps(int flag, bool debug, const char* dir) {
     //**************************************************************************
     // ******* OVERLAYED SIGMAS Y BINS ********
     //**************************************************************************
-    TLegend *leg_sigY = new TLegend(0.4, 0.2, 0.7, 0.4,"","brNDC");
+    TLegend *leg_sigY = new TLegend(0.4, 0.2, 0.7, 0.424,"","brNDC");
     canv_allsigsY = new TCanvas("Overlayed_SigmasY", "", 500, 500);
 
     for (auto k : sigmas) {
@@ -1201,8 +1201,6 @@ void doMaps(int flag, bool debug, const char* dir) {
     }
     hist_effY_rot_cut_nbins[sigmas[0]]->Draw("same, axis");
 
-    leg_sigY->Draw();
-
     TLatex label_sigY;
     // NDC means normalized coordinates
     label_sigY.SetNDC();
@@ -1210,6 +1208,9 @@ void doMaps(int flag, bool debug, const char* dir) {
     label_sigY.SetTextAlign(31);
     //label_sigY.DrawLatex(0.92,0.875, "Sigma Tiles Y Eff");
   
+    leg_sigY->SetTextSize(0.04);
+    leg_sigY->Draw();
+
     // Now update
     gPad->Update();
     canv_allsigsY->Print("Overlayed_Plots/Overlayed_Sigmas_YEff_nbins.png");
@@ -1219,7 +1220,7 @@ void doMaps(int flag, bool debug, const char* dir) {
     //**************************************************************************
     // ******* OVERLAYED SIGMAS X BINS *******
     //**************************************************************************
-    TLegend *leg_sigX = new TLegend(0.4, 0.2, 0.7, 0.5,"","brNDC");
+    TLegend *leg_sigX = new TLegend(0.4, 0.2, 0.7, 0.424,"","brNDC");
     canv_allsigsX = new TCanvas("Overlayed_SigmasX", "", 500, 500);
     
     for (auto k : sigmas) {
@@ -1234,13 +1235,15 @@ void doMaps(int flag, bool debug, const char* dir) {
     }
     hist_effX_rot_cut_nbins[sigmas[0]]->Draw("same, axis");
 
-    leg_sigX->Draw();
     TLatex label_sigX;
     label_sigX.SetNDC();
     label_sigX.SetTextSize(0.05);
     label_sigX.SetTextAlign(31);
     //label_sigX.DrawLatex(0.92,0.875,"Sigma Tiles X Eff");
   
+    leg_sigX->SetTextSize(0.04);
+    leg_sigX->Draw();
+
     // Now update
     gPad->Update();
     canv_allsigsX->Print("Overlayed_Plots/Overlayed_Sigmas_XEff_nbins.png");

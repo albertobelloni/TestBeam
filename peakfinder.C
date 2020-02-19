@@ -350,7 +350,7 @@ void peakfinder(const char* filename,
   hist->GetXaxis()->SetTitle("Charge [fC]");
   hist->GetYaxis()->SetTitle("Events");
   hist->GetXaxis()->SetTitleOffset(1.1);
-  hist->GetYaxis()->SetTitleOffset(1);
+  hist->GetYaxis()->SetTitleOffset(1.0);
   hist->GetYaxis()->SetMaxDigits(3);
   hist->SetLineWidth(3);
   hist->Draw("hist,same");
@@ -403,7 +403,7 @@ void peakfinder(const char* filename,
 
 
 // When you need to run all fits one after the other...
-void run_peakfinder(const char* filename) {
+void run_peakfinder(const char* filename = "energy_hists.root") {
 
   const char* treenames[8] =
     {"energy_tree_EJ_200",
