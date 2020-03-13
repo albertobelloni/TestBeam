@@ -549,7 +549,7 @@ void doMaps(int flag, bool debug, const char* dir) {
       label.SetTextSize(0.05);
       label.SetTextAlign(30);
       label.DrawLatex(0.8,0.875, entry[i].c_str());
-      gPad->SetGrid();
+      //gPad->SetGrid();
       
       canv[i]->Print(Form("Original_Images/Efficiency_Maps_2D/"
 			  "efficiency_map_%s.png",channels[i].name.c_str()));
