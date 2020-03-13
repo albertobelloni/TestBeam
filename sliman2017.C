@@ -520,7 +520,7 @@ void doMaps(int flag, bool debug, const char* dir) {
 
     // Set up line
     TLine* fid_line = new TLine();
-    fid_line->SetLineWidth(2);
+    fid_line->SetLineWidth(3);
     fid_line->SetLineStyle(kDashed);
     
     // Set Palette to kBird for UMD Style
@@ -564,7 +564,7 @@ void doMaps(int flag, bool debug, const char* dir) {
     //**************************************************************************
 
     TLine* fid_line_rot = new TLine();
-    fid_line_rot -> SetLineWidth(2);
+    fid_line_rot -> SetLineWidth(3);
     fid_line_rot -> SetLineStyle(kDashed);
     
     hist_eff_rot[i] -> Divide( hist_eff_rot[i], hist_den_rot[i],1,1,"b");
@@ -1562,6 +1562,7 @@ void doEnergy(int flag, bool debug, const char* dir) {
       if (i>=3 && i<7)
 	hist_en[i]->GetXaxis()->SetRangeUser(1.58,3500);
       hist_en[i]->Draw("colz");
+      canv[i]->Update(); // this is needed to get the cut line
       hist_en[i]->Write();
       
       TLatex label;
@@ -1570,6 +1571,12 @@ void doEnergy(int flag, bool debug, const char* dir) {
       label.SetTextAlign(30);
       label.DrawLatex(0.92,0.875, entry[i].c_str());
       label.SetTextAlign(11);
+      
+      TLine cut_line;
+      cut_line.SetLineWidth(2);
+      cut_line.SetLineStyle(kDashed);
+      cut_line.DrawLine(25, 10,
+			25, TMath::Power(10,canv[i]->GetUymax()));
       
       float eff = hist_en[i]->Integral(hist_en[i]->FindBin(25),
 				       hist_en[i]->GetNbinsX()) /
@@ -1685,7 +1692,7 @@ void doEnergy(int flag, bool debug, const char* dir) {
 	hist_en_bins_pref[i]->GetYaxis()->SetMaxDigits(3);
 
       hist_en_bins_pref[i]->Draw("colz");
-      canv_bins_pref[i]->Update(); // this may be needed to get the cut line
+      canv_bins_pref[i]->Update(); // this is needed to get the cut line
       hist_en_bins_pref[i]->Write();
 
       TLatex label;
