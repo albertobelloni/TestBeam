@@ -242,6 +242,14 @@ void peakfinder(const char* filename,
     peak_gauss->SetLineColor(p % 9 + 1);
     peak_gauss->SetLineStyle(p >9?2:1);
     peak_gauss->SetNpx(1000);
+
+    // One of my usual tricks: EJ-200 seems to have a Gaussian
+    // in the wrong spot, that is also causing the x axis to be yellow:
+    // let us remove it with a very specific cut:
+    if (strcmp(treename,"energy_tree_EJ_200")   ==0 &&
+	func->GetParameter(3*p+1)>490)
+      continue;
+
     peak_gauss->Draw("same");
   }
 
@@ -297,6 +305,14 @@ void peakfinder(const char* filename,
     line_gauss->SetLineColor(sorted[p] % 9 + 1);
     line_gauss->SetLineStyle(sorted[p] >9?2:1);
     line_gauss->SetLineWidth(2);
+
+    // One of my usual tricks: EJ-200 seems to have a Gaussian
+    // in the wrong spot, that is also causing the x axis to be yellow:
+    // let us remove it with a very specific cut:
+    if (strcmp(treename,"energy_tree_EJ_200")   ==0 &&
+	func->GetParameter(3*sorted[p]+1)>490)
+      continue;
+
     line_gauss->Draw("same");
 
     // Note: p=0 should correspond, after ordering the list of peaks,
@@ -359,9 +375,11 @@ void peakfinder(const char* filename,
   label.SetNDC();
   label.SetTextSize(0.05);
   label.SetTextAlign(31); // right-aligned; center-aligned
-  label.DrawLatex(0.91,0.875,Form("<p.e.> hist: %.3f",avg_pe_integ));
-  label.DrawLatex(0.91,0.825,Form("<p.e.> fit: %.3f",avg_pe_fit));
-  label.DrawLatex(0.91,0.775,TString(treename).
+  // Decided to remove p.e. from plots: why numbers from different methods?
+  // label.DrawLatex(0.91,0.875,Form("<p.e.> hist: %.3f",avg_pe_integ));
+  // label.DrawLatex(0.91,0.825,Form("<p.e.> fit: %.3f",avg_pe_fit));
+  // After removing labels above, we can move the tile name up: 0.775 -> 0.875
+  label.DrawLatex(0.91,0.875,TString(treename).
 		  ReplaceAll("energy_tree_","").
 		  ReplaceAll("_","-"));
 
