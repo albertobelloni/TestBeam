@@ -95,7 +95,7 @@ void make_fitter_plots(const char* filename, bool logy = false) {
   if (!logy && strchr(filename,'F'))
       frame->GetXaxis()->SetRangeUser(-50,350);
 
-  frame->GetYaxis()->SetTitle("Entries");
+  frame->GetYaxis()->SetTitle("Events");
 
   frame->GetYaxis()->SetTitleOffset(1.0);
   frame->GetYaxis()->SetMaxDigits(3);
