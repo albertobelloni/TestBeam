@@ -2,11 +2,16 @@
 
 ###############################################################################
 #
-# example submission on condor:
+# example submission on HEPCMS condor:
 #
 #    condor_submit condor_fits.jdl
 #
 ###############################################################################
+
+if [ `hostname -d` = "cern.ch" ]; then
+    echo "I did not manage to get this to run on LXPLUS, move to HEPCMS"
+    exit
+fi
 
 source /cvmfs/cms.cern.ch/cmsset_default.sh
 eval `scramv1 runtime -sh`

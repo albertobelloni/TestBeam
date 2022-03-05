@@ -67,7 +67,13 @@ Once compiled, run the fits on condor:
 
 
 ```
-condor_submit condorfits.jdl
+condor_submit condor_fits.jdl
+```
+
+Check the status of your condor jobs with:
+
+```
+condor_q
 ```
 
 The output is a set of _roofit\_?\_?\_?.root_ files.
@@ -78,7 +84,10 @@ binned/unbinned fit; rebin value - used only if binned fit).
 
 One shall then produce histograms, from the _roofit\_\*_ files. This is
 accomplished by running the _make\_fitter\_plots.C_ macro. Again, instructions
-are provided in the top part of the macro.
+are provided in the top part of the macro. An important note: the function
+_make_all_fitter_plots()_ will use the _roofit\_\*_ files contained in the
+_results_ directory. They are copied there upon running _make fitclean_, but
+it is easy enough to copy them by hand.
 
 Together with the plots, a text file with some fit results, _yield\_results.txt_,
 is saved. Let us now run the multi-Gaussian fitter, and collect in the same

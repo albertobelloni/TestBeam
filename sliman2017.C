@@ -1420,17 +1420,17 @@ void doEnergy(int flag, bool debug, const char* dir) {
   chain->SetBranchAddress("run", &run);
 
   // Here we fill all histograms
-  for (unsigned int i=0;i<chain->GetEntries();++i) {
+  for (unsigned int j=0;j<chain->GetEntries();++j) {
 
     // If debugging, let us run only on 50k events
-    if (debug && i>50000)
+    if (debug && j>50000)
       continue;
 
     // Do the alignment
-    chain->GetEntry(i);
+    chain->GetEntry(j);
 
-    if (i%100000==0)
-      std::cout << "  Done with " << i << " / "
+    if (j%100000==0)
+      std::cout << "  Done with " << j << " / "
                 << chain->GetEntriesFast() << " events\n";
 
     double x_hit = intercept_X + z_ex*slope_X;
@@ -1449,12 +1449,27 @@ void doEnergy(int flag, bool debug, const char* dir) {
         energy_ps+=pulse[channels[i].chan][ts];
 
       // I think this is the pedestal cut?
-      energy_ps-=TIMESLICES.size()*ped[channels[i].chan];
+      //energy_ps-=TIMESLICES.size()*ped[channels[i].chan];
+      //
+      // NOTE: FOUND ON FEB-25/2022 THAT PED SHOULD BE 1/3 OF TS1+TS2+TS3
+      // BUT THIS IS SOMETIMES _NOT_ THE CASE
+      // REPLACING CODE ABOVE, WHICH USES ped, WITH CODE BELOW, USING SUM OF pulse
+      energy_ps-=(TIMESLICES.size()/3.)*
+        (pulse[channels[i].chan][0]+
+         pulse[channels[i].chan][1]+
+         pulse[channels[i].chan][2]);
 
       // I think I can fill the pedestal plot without any cut on
       // fiduciality: whether there is a muon or not, we are
       // plotting the energy measured out of time
-      hist_en_ped[i]->Fill(ped[channels[i].chan]);
+      //hist_en_ped[i]->Fill(ped[channels[i].chan]);
+      //
+      // NOTE: FOUND ON FEB-25/2022 THAT PED SHOULD BE 1/3 OF TS1+TS2+TS3
+      // BUT THIS IS SOMETIMES _NOT_ THE CASE
+      // REPLACING CODE ABOVE, WHICH USES ped, WITH CODE BELOW, USING SUM OF pulse
+      hist_en_ped[i]->Fill((pulse[channels[i].chan][0]+
+			    pulse[channels[i].chan][1]+
+			    pulse[channels[i].chan][2])/3.);
 
       // Look for anti-fiduciality to fill pedestal plot
       // not enough to say !isFiducial,
@@ -1927,16 +1942,16 @@ void doTimeSlice(bool debug, const char* dir) {
   int run;
   chain->SetBranchAddress("run", &run);
 
-  for (unsigned int i=0;i<chain->GetEntries();++i) {
-    if (debug && i>1000)
+  for (unsigned int j=0;j<chain->GetEntries();++j) {
+    if (debug && j>1000)
       continue;
 
 
     // Do the alignment
-    chain->GetEntry(i);
+    chain->GetEntry(j);
 
-    if (i%100000==0)
-      std::cout << "  Done with " << i << " / "
+    if (j%100000==0)
+      std::cout << "  Done with " << j << " / "
                 << chain->GetEntriesFast() << " events\n";
 
     double x_hit = intercept_X + z_ex*slope_X;
@@ -1948,36 +1963,29 @@ void doTimeSlice(bool debug, const char* dir) {
       if (run < 3410 && i >= 3 && i <= 6)
         continue;
 
-      // Use the time slices numbers contained in TIMESLICES
-      // and remove pedestal times # of time slices used 
-      double energy_ps = 0;
-      for (auto ts : TIMESLICES)
-        energy_ps+=pulse[channels[i].chan][ts];
-
-      // Here we remove the pedestal: there is a single number,
-      // corresponding to the pedestal in one time slice;
-      // hence, we multiply it by the number of time slices
-      // that form our signal pulse (defined in TIMESLICES)
-      energy_ps-=TIMESLICES.size()*ped[channels[i].chan];
+      // In previous versions, calculated energy_ps here, but unclear why,
+      // as it is never used...
+      double pedestal = (pulse[channels[i].chan][0]+
+			 pulse[channels[i].chan][1]+
+			 pulse[channels[i].chan][2])/3.;
 
       // Very important: we require the hit to be fiducial
       if (!isFiducial( i, x_hit, y_hit))
         continue;
 
       // The fill here puts the pulse - ped in a specific bin
+      // NOTE: FOUND ON FEB-25/2022 THAT PED SHOULD BE 1/3 OF TS1+TS2+TS3
+      // BUT THIS IS SOMETIMES _NOT_ THE CASE
+      // REPLACING ped[channels[i].chan] WITH pedestal, CORRECTLY CALCULATED ABOVE
       for (int t=0;t<NTS;++t) {
 	// i is index on channels:
 	// <3 and 7 are sigma tiles;
 	// 3-6 are finger tiles
         if (i < 3 || i == 7) {
-          hist_ts[i]->Fill(t+1,
-                           pulse[channels[i].chan][t]-
-                           ped[channels[i].chan]);
+          hist_ts[i]->Fill( t+1,pulse[channels[i].chan][t]-pedestal);
         }
         else {
-          hist_tsF[i]->Fill(t+1,
-                            pulse[channels[i].chan][t]-
-                            ped[channels[i].chan]);
+          hist_tsF[i]->Fill(t+1,pulse[channels[i].chan][t]-pedestal);
         }
       }
     } // loop on channels
