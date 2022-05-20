@@ -2056,7 +2056,7 @@ void doTimeSlice(bool debug, const char* dir) {
   leg_fing->SetTextSize(0.05);
   hist_tsF[max_indexF]->Draw("hist");
   for (unsigned int i=0;i<channels.size(); i++) {
-    if (i > 2 || i < 7)
+    if ((i > 2) && (i < 7))
       hist_tsF[i]->Draw("hist,same");
   }
   leg_fing->Draw("same");
