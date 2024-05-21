@@ -4,7 +4,7 @@ ROOT macros to analyze H2 testbeam ntuples
 
 ## Prepare slimmed ntuples
 
-The macro _slimmer\_2017.C_ is used to produce ntuples with smaller
+The macro `slimmer_2017.C` is used to produce ntuples with smaller
 event footprint than the ntuples produced with whichever package will
 produce the next test-beam ntuples. For the 2017 test-beam data, we
 used https://github.com/BaylorCMS/HCALTestBeam (more details at the
@@ -14,21 +14,21 @@ There is a small inconveniency here. We need to:
 
 - make the slimmed ntuples once
 
-- run the macro which produces the alignment plots, _sliman2017.C_
+- run the macro which produces the alignment plots, `sliman2017.C`
   (run the `doAlignmentPlots()` function)
 
 - obtain the x- and y- offset of the wire chambers, as printed out at
   the end of step above
 
-- write the offsets in the top part of _slimmer\_2017.C_ and
-  _sliman2017.h_
+- write the offsets in the top part of `slimmer_2017.C`and
+  `sliman2017.h`
 
 - well, run again the slimming job...
 
 ## Produce (most of) the plots and create the file with the energy tree
 
-The main macro is _sliman2017.C_. First, start creating the directory
-structure to hold the histograms (.C, .root, .pdf, and .png):
+The main macro is `sliman2017.C`. First, start creating the directory
+structure to hold the histograms (`.C`, `.root`, `.pdf`, and `.png`):
 
 ```
 make slimprep
@@ -42,7 +42,7 @@ HEPCMS: /data/users/abelloni/CERN_TB_Jul17/SLIM_2/
 ```
 
 One can explicitly indicate the file directory when using the commands below,
-or simply uncomment the relevant line in _sliman2017.h_ to conveniently
+or simply uncomment the relevant line in `sliman2017.h` to conveniently
 select the proper default value for the parameter `slim_dir`.
 Then, run the main macro:
 
@@ -54,7 +54,7 @@ Then, run the main macro:
 [] doTimeSlices()
 ```
 
-The file _energy_hists.root_ shall also be created. It contains a tree with
+The file `energy_hists.root` shall also be created. It contains a tree with
 the energy of fiducial hits for each of the scintillator tiles, and binned
 energy distributions. This file is used as input to the fitters.
 
@@ -63,7 +63,7 @@ energy distributions. This file is used as input to the fitters.
 ### Physics-driven
 
 The physics-driven fitter requires the installation of Yi-Mu's RooFit PDFs.
-Instructions can be found in the top of _fitter2017.C_.
+Instructions can be found in the top of `fitter2017.C`.
 Once compiled, run the fits on condor:
 
 
@@ -77,28 +77,28 @@ Check the status of your condor jobs with:
 condor_q
 ```
 
-The output is a set of _roofit\_?\_?\_?.root_ files.
+The output is a set of `roofit_?_?_?.root` files.
 The first ? indicates whether the fit used a binned histogram or a tree
 as input; the second ? indicates the tile;
 the third ? is a set of flags (baseline/afterpulsing/full fit;
 binned/unbinned fit; rebin value - used only if binned fit).
 
-One shall then produce histograms, from the _roofit\_\*_ files. This is
-accomplished by running the _make\_fitter\_plots.C_ macro. Again, instructions
+One shall then produce histograms, from the `roofit_*` files. This is
+accomplished by running the `make_fitter_plots.C` macro. Again, instructions
 are provided in the top part of the macro. An important note: the function
-_make_all_fitter_plots()_ will use the _roofit\_\*_ files contained in the
-_results_ directory. They are copied there upon running _make fitclean_, but
+`make_all_fitter_plots()` will use the `roofit_*` files contained in the
+`results` directory. They are copied there upon running `make fitclean`, but
 it is easy enough to copy them by hand.
 
 Together with the plots, a text file with some fit results,
-_yield\_results.txt_, is saved. Let us now run the multi-Gaussian fitter,
+`yield_results.txt`, is saved. Let us now run the multi-Gaussian fitter,
 and collect in the same file the results of the other two <p.e.> estimators,
 before copying it to the DN-18-007 directory.
 
 ### Multi-Gaussian
 
-The main macro is _peakfinder.C_. Instructions on how to run it are reported
-in the top part of that file. Once run, the _yield\_results.txt_ file will
+The main macro is `peakfinder.C`. Instructions on how to run it are reported
+in the top part of that file. Once run, the `yield_results.txt` file will
 also contain the results of the <p.e.> estimation using the histogram integral
 and multi-Gaussian fit methods. It is now ready to be copied to the DN-18-007
 directory.
@@ -113,15 +113,15 @@ make packfigs
 ```
 
 The first command will move all files produced by the physics-driven fit to
-a directory called _results_. To be honest, I think it is not necessary, since
+a directory called `results`. To be honest, I think it is not necessary, since
 the second command will scour all directories and collect in a tarball,
-_dn-18-007\_figs.tar_, the files needed to the paper and the presentation.
+`dn-18-007_figs.tar`, the files needed to the paper and the presentation.
 The directory does look nicer, if one runs `make fitclean`.
 
 ## Clean all
 
-The following command will remove _yield\_results.txt_, _dn-18-007\_figs.tar_,
-all the compiled code (\_C.so, \_C.d, and dictionary files), and the directories
+The following command will remove `yield_results.txt`, `dn-18-007_figs.tar`,
+all the compiled code (`C.so`, `C.d`, and dictionary files), and the directories
 created by the `make slimprep` command:
 
 ```
