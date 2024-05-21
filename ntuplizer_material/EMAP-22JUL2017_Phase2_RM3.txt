@@ -1,0 +1,8 @@
+# uTCA QIE11
+# RM 3
+#  i     cr  sl  tb  dcc  spigot  fiber/slb  fibcha/slbcha  subdet  ieta  iphi  depth
+6666666  41   5   u   0      0         9           3          HE     23     8     1 
+6666666  41   5   u   0      0         2           0          HE     23     8     2 
+6666666  41   5   u   0      0         3           2          HE     23     8     3 
+6666666  41   5   u   0      0         9           2          HE     23     8     4 
+

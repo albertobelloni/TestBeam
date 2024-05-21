@@ -1,0 +1,25 @@
+#login to lxplus7 (not lxplus!) and open a working directory
+
+ssh [username]@lxplus7.cern.ch
+
+#this assumes you use bash, if you use another shell, open bash
+
+source /afs/cern.ch/user/j/jpotarf/public/HcalTestBeam17/setuptestbeamanalysiscode.sh
+
+# actually, just set python:
+export PYTHONHOME=/cvmfs/cms.cern.ch/slc7_amd64_gcc530/external/python/2.7.11-giojec
+
+#uses the daq password
+
+#retrieve the raw data file
+
+rsync -av daq@cmshcaltb02:/data/spool/*[RUN NUMBER].root .
+
+#runs the analysis code and puts it online. Access the plots at http://cern.ch/hcaltestbeam/analysis/
+
+./process_run.py -o /eos/user/j/jpotarf/www/hcaltestbeam/analysis/ -i ./ -r [RUN NUMBER] -e EMAP-14JUL2017_Phase1_RM1RM2.txt
+
+As an example, this is how the plots were generated for #2760:
+source /afs/cern.ch/user/j/jpotarf/public/HcalTestBeam17/setuptestbeamanalysiscode.sh
+rsync -av daq@cmshcaltb02:/data/spool/*[RUN NUMBER].root .
+./process_run.py -o /eos/user/j/jpotarf/www/hcaltestbeam/analysis/ -i ./ -r [RUN NUMBER] -e EMAP-14JUL2017_Phase1_RM1RM2.txt

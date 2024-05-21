@@ -7,7 +7,8 @@ ROOT macros to analyze H2 testbeam ntuples
 The macro _slimmer\_2017.C_ is used to produce ntuples with smaller
 event footprint than the ntuples produced with whichever package will
 produce the next test-beam ntuples. For the 2017 test-beam data, we
-used https://github.com/BaylorCMS/HCALTestBeam.
+used https://github.com/BaylorCMS/HCALTestBeam (more details at the
+bottom of this README.md file).
 
 There is a small inconveniency here. We need to:
 
@@ -89,10 +90,10 @@ _make_all_fitter_plots()_ will use the _roofit\_\*_ files contained in the
 _results_ directory. They are copied there upon running _make fitclean_, but
 it is easy enough to copy them by hand.
 
-Together with the plots, a text file with some fit results, _yield\_results.txt_,
-is saved. Let us now run the multi-Gaussian fitter, and collect in the same
-file the results of the other two <p.e.> estimators, before copying it to
-the DN-18-007 directory.
+Together with the plots, a text file with some fit results,
+_yield\_results.txt_, is saved. Let us now run the multi-Gaussian fitter,
+and collect in the same file the results of the other two <p.e.> estimators,
+before copying it to the DN-18-007 directory.
 
 ### Multi-Gaussian
 
@@ -128,3 +129,17 @@ make cleanall
 ```
 
 Directories containing the results from the condor jobs are preserved.
+
+## Production of ntuples
+
+This is a moderately complicate step. The code is available at
+https://github.com/BaylorCMS/HCALTestBeam.
+
+The branch `CMSSW_8_1_0_pre7` seems to be the one I used last.
+Two notes about them:
+
+- `UserCode/H2TestBeamAnalyzer/tb_ana.py`: three `ROOT.gROOT.ProcessLine`'s
+  contain `UChar_t`'s, which I replaced with `Float_t`
+- the EMap ultimately used may be `EMAP-14JUL2017_Phase1_RM1RM2_Phase2_RM3.txt`
+  and `EMAP-22JUL2017_Phase2_RM3.txt`, which I put in this repository for the
+  sake of completeness
