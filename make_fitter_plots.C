@@ -107,6 +107,15 @@ void make_fitter_plots(const char* filename, bool logy = false) {
   float lambdaFit = lambda->getValV();
   float lambdaFitErr = lambda->getError();
 
+  float pedFit = ped->getValV();
+  float pedFitErr = ped->getError();
+  float gainFit = gain->getValV();
+  float gainFitErr = gain->getError();
+  float s0Fit = s0->getValV();
+  float s0FitErr = s0->getError();
+  float s1Fit = s1->getValV();
+  float s1FitErr = s1->getError();
+
   float meanFitCorr = meanFit/(1-lambdaFit);
   float meanFitCorrErr = meanFit/(1-lambdaFit)*
     sqrt((meanFitErr/meanFit)*
@@ -123,10 +132,16 @@ void make_fitter_plots(const char* filename, bool logy = false) {
   label.SetNDC();
   label.SetTextSize(0.05);
   label.SetTextAlign(31); // right-aligned; center-aligned
-  //label.DrawLatex(0.91,0.875,Form("mean #mu: %.3f#pm%.3f",meanFit,meanFitErr));
-  //label.DrawLatex(0.91,0.825,Form("cross-talk #chi: %.3f#pm%.3f",lambdaFit,lambdaFitErr));
-  //label.DrawLatex(0.91,0.775,Form("#mu/(1-#chi): %.3f#pm%.3f",meanFitCorr,meanFitCorrErr));
   label.DrawLatex(0.91,0.875,TString(tile(filename)).ReplaceAll("_","-"));
+
+  label.SetTextSize(0.03);
+  label.DrawLatex(0.91,0.830,Form("mean #mu: %.3f#pm%.3f",meanFit,meanFitErr));
+  label.DrawLatex(0.91,0.790,Form("cross-talk #chi: %.3f#pm%.3f",lambdaFit,lambdaFitErr));
+  //label.DrawLatex(0.91,0.775,Form("#mu/(1-#chi): %.3f#pm%.3f",meanFitCorr,meanFitCorrErr));
+  label.DrawLatex(0.91,0.750,Form("d_{inter-peak} [fC]: %.2f#pm%.2f",gainFit,gainFitErr));
+  label.DrawLatex(0.91,0.710,Form("pedestal [fC]: %.2f#pm%.2f",pedFit,pedFitErr));
+  label.DrawLatex(0.91,0.670,Form("#sigma_{0} [fC]: %.2f#pm%.2f",s0Fit,s0FitErr));
+  label.DrawLatex(0.91,0.630,Form("#sigma_{1} [fC]: %.2f#pm%.2f",s1Fit,s1FitErr));
 
   canvas->Print(TString(filename).
 		ReplaceAll("roofit","canvas").
